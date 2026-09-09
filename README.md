@@ -72,8 +72,8 @@ flowchart TD
         ModernReport["Emit: modernization_report.html"]
         GraphifyOut["Emit: graph.json, graph.html, GRAPH_REPORT.md"]
         
-        Orchestrator -->|invoke_subagent [Parallel]| AssessorSubagent
-        Orchestrator -->|invoke_subagent [Parallel]| GraphifySubagent
+        Orchestrator -->|"invoke_subagent [Parallel]"| AssessorSubagent
+        Orchestrator -->|"invoke_subagent [Parallel]"| GraphifySubagent
         AssessorSubagent --> ModernReport
         GraphifySubagent --> GraphifyOut
     end
