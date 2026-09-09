@@ -42,8 +42,9 @@ In software engineering, legacy monoliths and aging codebases are the coarse, un
 
 | Feature | Type | Description |
 | :--- | :---: | :--- |
-| **`assess` (`skills/assess`)** | Skill | Full Google Cloud `codmod` driver: pre-scan with `@migration-scout`, intent mapping (`JAVA_LEGACY_TO_MODERN`, `WILDFLY_LEGACY_TO_MODERN`, `MICROSOFT_MODERNIZATION`, `ARM_MIGRATION`, `CLOUD_TO_CLOUD`), interactive dry-run cost shields, execution of `codmod create`, self-healing diagnostic collection (`codmod collect-logs`), and JSON telemetry. |
-| **`rewrite` (`skills/rewrite`)** | Skill | Language-agnostic rewrite brew protocol: ingests assessment reports, maps source-to-target runtimes, establishes strict contract parity, and cuts vertical slices into `05_PLAN.md`. |
+| **`assess` (`skills/assess`)** | Skill | Full Google Cloud `codmod` driver: pre-scan with `@migration-scout`, intent mapping (`JAVA_LEGACY_TO_MODERN`, `WILDFLY_LEGACY_TO_MODERN`, `MICROSOFT_MODERNIZATION`, `ARM_MIGRATION`, `CLOUD_TO_CLOUD`), interactive dry-run cost shields, execution of `codmod create`, Graphify dependency analysis (`graphify . --directed`), self-healing diagnostic collection (`codmod collect-logs`), and JSON telemetry. |
+| **`rewrite` (`skills/rewrite`)** | Skill | Language-agnostic rewrite brew protocol: ingests assessment reports, digests semantic findings with Graphify architecture analysis (`scripts/digest_report.py`), maps source-to-target runtimes, establishes strict contract parity, and cuts vertical slices into `05_PLAN.md`. |
+| **`digest_report.py` (`scripts/`)** | Tool | Dual-lens synthesis engine: extracts semantic tasks from `codmod` reports, maps codebase component modules and central dependency hubs from `graphify`, and emits `migration_matrix.json` and dependency-ordered `05_PLAN.md`. |
 | **`@migration-scout`** | Agent | Autonomous codebase scanner detecting source language levels, application servers, and cloud SDK lock-in. |
 | **`@ast-grinder`** | Agent | AST transformation engine executing automated codemods, syntax modernization, and deprecated API replacements. |
 | **`@runtime-parity-verifier`** | Agent | Evaluates functional, behavioral, and schema parity via active synthetic request replay in an execution sandbox, writing detailed diffs into `docs/parity_discrepancies.md`. |
@@ -67,20 +68,21 @@ flowchart TD
         EmitScoutSummary["Emit: Migration Intent Classification"]
     end
 
-    subgraph AssessPhase["⚙️ Phase 2: Assessment & Cost Shield (skills/assess)"]
+    subgraph AssessPhase["⚙️ Phase 2: Dual-Lens Assessment (skills/assess)"]
         IntentMapping["Map Codmod Intent<br/>(JAVA_LEGACY_TO_MODERN, WILDFLY, etc.)"]
         CostShield{"Interactive Dry-Run Cost Shield"}
         UserAbort["Abort: Avoid Unintended GCP Cost"]
         ExecCodmod["Run: codmod create & codmod collect-logs"]
         ModernReport["Emit: modernization_report.html & Telemetry JSON"]
+        GraphifyRun["Run: graphify . --directed<br/>(graph.json, graph.html, GRAPH_REPORT.md)"]
     end
 
-    subgraph RewritePhase["📐 Phase 3: Parity Specification (skills/rewrite)"]
-        IngestReport["Ingest Assessment Insights"]
+    subgraph RewritePhase["📐 Phase 3: Digest & Parity Specification (skills/rewrite)"]
+        DigestTool["scripts/digest_report.py<br/>(Combine Semantic Tasks + Component Modules)"]
         RuntimeMapping["Source-to-Target Architecture Mapping"]
         ParityMatrix["Establish Strict Functional Parity Matrix"]
-        VerticalSlicing["Cut Decoupled Migration Slices"]
-        EmitArtifacts["Emit: 02_PRD.md & 05_PLAN.md"]
+        VerticalSlicing["Dependency-Ordered Slices (Foundation, Leaf, Core, Central Hubs, Ingress)"]
+        EmitArtifacts["Emit: 02_PRD.md, 05_PLAN.md & migration_matrix.json"]
     end
 
     subgraph GrindingPass["🔄 Phase 4: AST Transformation (@ast-grinder & @msbuild)"]
@@ -100,8 +102,10 @@ flowchart TD
     EmitScoutSummary --> IntentMapping --> CostShield
     CostShield -->|User Rejects Cost| UserAbort
     CostShield -->|User Confirms| ExecCodmod
-    ExecCodmod --> ModernReport --> IngestReport
-    IngestReport --> RuntimeMapping --> ParityMatrix --> VerticalSlicing --> EmitArtifacts
+    ExecCodmod --> ModernReport
+    LegacyCode --> GraphifyRun
+    ModernReport & GraphifyRun --> DigestTool
+    DigestTool --> RuntimeMapping --> ParityMatrix --> VerticalSlicing --> EmitArtifacts
     EmitArtifacts --> ASTTransform
     ASTTransform --> BuildCheck --> ParityCheck --> ParityVerdict
     ParityVerdict -->|Discrepancy Found| ASTTransform

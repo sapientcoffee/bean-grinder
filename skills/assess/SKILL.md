@@ -121,6 +121,26 @@ To leverage the latest Gemini 3.x capabilities while avoiding Vertex AI regional
 
 ---
 
+## 6b. Architectural Dependency Scan via Graphify (Recommended)
+
+1. **Map Codebase Architecture & Dependencies:**
+   - To complement the semantic assessment with concrete code relationships, run **Graphify** on the target repository:
+     ```bash
+     graphify . --directed
+     ```
+   - This generates `graphify-out/graph.json`, `graphify-out/graph.html`, and `graphify-out/GRAPH_REPORT.md` detecting:
+     *   **Component Modules:** Natural domain clusters and functional subsystems (e.g., Repositories, Domain Models, Web Controllers).
+     *   **Central Dependency Hubs:** Core classes with the highest number of callers and dependencies, representing high blast radius.
+     *   **Hidden Coupling:** Unexpected cross-subsystem dependencies that bridge across layer boundaries.
+
+2. **Automated Digestion Preparation:**
+   - The emitted `modernization_report.html` and `graphify-out/graph.json` are digested in Phase 2 / Stage 5 using:
+     ```bash
+     python3 scripts/digest_report.py --report modernization_report.html --graph graphify-out/graph.json --output-dir plans/<slug>/<timestamp>
+     ```
+
+---
+
 ## 7. Report Mirroring & Telemetry
 
 1. **Artifact Mirroring (Rule 5 compliance):**
