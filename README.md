@@ -1,10 +1,18 @@
+<p align="center">
+  <img src="assets/banner.png" alt="Bean-Grinder Banner" width="100%" />
+</p>
+
 # ⚙️ Bean-Grinder
 
-> Code Modernization, AST Transformations, and Migration Forge for Antigravity SDLC pipelines.
+> **Code Modernization, AST Transformations, and Migration Forge for Antigravity SDLC pipelines.**
 
 ---
 
 ## ☕ Why "The Grinder"? (The Metaphor Explained)
+
+<p align="center">
+  <img src="assets/sketch.png" alt="Bean-Grinder Fun Sketch" width="480px" />
+</p>
 
 In specialty coffee brewing, whole roasted beans cannot simply be dropped directly into boiling water—they must first pass through precision-calibrated burrs to be milled into uniform, structured particle sizes before optimal extraction can occur.
 
@@ -43,25 +51,63 @@ In software engineering, legacy monoliths and aging codebases are the coarse, un
 
 ---
 
-## 🔄 Modernization Workflow
+## 🔄 Detailed Code Modernization & Migration Workflow
 
 ```mermaid
-graph TD
-    Legacy[(Legacy Monolith)] --> Scout["@migration-scout<br/>(Framework & Version Scan)"]
-    Scout --> Assess["assess<br/>(GCP Auth & codmod create)"]
-    Assess --> Report["modernization_report.html"]
-    Report --> Rewrite["rewrite protocol<br/>(Parity Baseline & Vertical Slices)"]
-    Rewrite --> PRD["02_PRD.md & 05_PLAN.md"]
-    PRD --> Brewer["☕ bean-brewer<br/>(TDD Implementation & PR)"]
-    
-    Assess -.->|Telemetry & Progress| Cup["🍵 bean-cup<br/>(visual-dashboard.html)"]
-    Rewrite -.-> Cup
-```
+flowchart TD
+    subgraph Intake["📥 Monolith Ingestion"]
+        LegacyCode["Legacy Monolithic Codebase<br/>(Java 8, WildFly, .NET 4.8, Monolithic DB)"]
+        GCPAuth["GCP Authentication & Project Context"]
+    end
 
-1. **Scan & Assess:** Run `/assess` to inspect the legacy codebase, estimate costs, and execute Google Cloud `codmod`.
-2. **Review Report:** Inspect the generated `modernization_report.html` and telemetry logs.
-3. **Formulate Parity Specification:** Run `/rewrite` to establish functional parity requirements and decompose the monolith into vertical slices (`02_PRD.md`, `05_PLAN.md`).
-4. **Execute & Verify:** Dispatch slices to `bean-brewer` for implementation and `@parity-auditor` for validation.
+    subgraph ScoutPhase["🔍 Phase 1: Pre-Scan (@migration-scout)"]
+        Scout["@migration-scout Subagent"]
+        DetectRuntimes["Detect Source Runtime & Deprecated Frameworks"]
+        DetectClouds["Detect Cloud SDKs & Proprietary Locks"]
+        EmitScoutSummary["Emit: Migration Intent Classification"]
+    end
+
+    subgraph AssessPhase["⚙️ Phase 2: Assessment & Cost Shield (skills/assess)"]
+        IntentMapping["Map Codmod Intent<br/>(JAVA_LEGACY_TO_MODERN, WILDFLY, etc.)"]
+        CostShield{"Interactive Dry-Run Cost Shield"}
+        UserAbort["Abort: Avoid Unintended GCP Cost"]
+        ExecCodmod["Run: codmod create & codmod collect-logs"]
+        ModernReport["Emit: modernization_report.html & Telemetry JSON"]
+    end
+
+    subgraph RewritePhase["📐 Phase 3: Parity Specification (skills/rewrite)"]
+        IngestReport["Ingest Assessment Insights"]
+        RuntimeMapping["Source-to-Target Architecture Mapping"]
+        ParityMatrix["Establish Strict Functional Parity Matrix"]
+        VerticalSlicing["Cut Decoupled Migration Slices"]
+        EmitArtifacts["Emit: 02_PRD.md & 05_PLAN.md"]
+    end
+
+    subgraph GrindingPass["🔄 Phase 4: AST Transformation (@ast-grinder & @msbuild)"]
+        ASTTransform["@ast-grinder (Automated Syntax & Codemods)"]
+        BuildCheck["@msbuild (Legacy Compilation Verification)"]
+        ParityCheck["@parity-auditor (Validate Input/Output Parity)"]
+        ParityVerdict{"Strict Parity Maintained?"}
+    end
+
+    subgraph Downstream["🚀 Downstream Delivery & Tracking"]
+        HandoffBrewer["Hand off Slices to bean-brewer<br/>(@architect, @engineer, TDD, PR)"]
+        TelemetryCup["Telemetry Sync to bean-cup<br/>(visual-dashboard.html)"]
+    end
+
+    LegacyCode & GCPAuth --> Scout
+    Scout --> DetectRuntimes & DetectClouds --> EmitScoutSummary
+    EmitScoutSummary --> IntentMapping --> CostShield
+    CostShield -->|User Rejects Cost| UserAbort
+    CostShield -->|User Confirms| ExecCodmod
+    ExecCodmod --> ModernReport --> IngestReport
+    IngestReport --> RuntimeMapping --> ParityMatrix --> VerticalSlicing --> EmitArtifacts
+    EmitArtifacts --> ASTTransform
+    ASTTransform --> BuildCheck --> ParityCheck --> ParityVerdict
+    ParityVerdict -->|Discrepancy Found| ASTTransform
+    ParityVerdict -->|Parity Verified| HandoffBrewer
+    ModernReport & EmitArtifacts -.-> TelemetryCup
+```
 
 ---
 
