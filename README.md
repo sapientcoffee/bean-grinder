@@ -4,7 +4,7 @@
 
 ---
 
-### ☕ Why "The Grinder"? (The Metaphor Explained)
+## ☕ Why "The Grinder"? (The Metaphor Explained)
 
 In specialty coffee brewing, whole roasted beans cannot simply be dropped directly into boiling water—they must first pass through precision-calibrated burrs to be milled into uniform, structured particle sizes before optimal extraction can occur.
 
@@ -17,20 +17,51 @@ In software engineering, legacy monoliths and aging codebases are the coarse, un
 
 ---
 
-## 🚀 Capabilities
+## 🏛️ Origin & Architectural Rationale
 
-- **`assess` (`skills/assess`)**: Complete Google Cloud `codmod` lifecycle management:
-  - Agentic pre-scan via `@migration-scout`
-  - Automated intent mapping (`JAVA_LEGACY_TO_MODERN`, `WILDFLY_LEGACY_TO_MODERN`, `MICROSOFT_MODERNIZATION`, `ARM_MIGRATION`, `CLOUD_TO_CLOUD`)
-  - Interactive dry-run cost estimation
-  - Execution of `codmod create`
-  - Self-healing log collection via `codmod collect-logs`
-  - Structured JSON telemetry logging
-- **`rewrite` (`skills/rewrite`)**: Application rewrite protocol that ingests assessment reports (`modernization_report.html`), establishes parity baselines, and cuts vertical slices (`05_PLAN.md`).
-- **`@migration-scout`**: Non-intrusive codebase scanner detecting language levels, application servers, and cloud SDKs.
-- **`@ast-grinder`**: AST transformation engine executing automated codemods and syntax updates.
-- **`@parity-auditor`**: Validates behavioral and API contract parity between legacy baselines and modernized targets.
-- **`@msbuild`**: Manages verbose legacy .NET and C++ builds during modernization passes.
+### Spawned from `bean-to-cup`
+**`bean-grinder`** was extracted from the monolithic [`bean-to-cup`](https://github.com/sapientcoffee/bean-to-cup) repository as part of a modular decomposition of the Antigravity barista swarm.
+
+### Why Decompose?
+1. **Dedicated Migration Specialization:** Enterprise codebase modernization, AST transformations, and Google Cloud `codmod` executions are specialized operations with unique prerequisites (GCP authorization, dry-run cost estimation, AST parsers). Isolating them prevents cluttering day-to-day feature development.
+2. **Clean Separation from Day 2 SRE (`bean-descale`):** While `bean-descale` focuses on runtime health, incident triage, and operational resilience, `bean-grinder` focuses purely on static codebase transformation, language upgrades, and architectural rewrites.
+3. **Parity-Preserving Handoffs:** `bean-grinder` generates assessment reports (`modernization_report.html`) and parity contracts (`02_PRD.md`) that hand off directly to `bean-brewer` for implementation and to `bean-cup` for visual tracking.
+4. **Independent Evolution:** Support for new `codmod` intents, AST transformation rules, and migration language targets can be added without modifying core feature delivery plugins.
+
+---
+
+## 🚀 Capabilities & Skills Reference
+
+| Feature | Type | Description |
+| :--- | :---: | :--- |
+| **`assess` (`skills/assess`)** | Skill | Full Google Cloud `codmod` driver: pre-scan with `@migration-scout`, intent mapping (`JAVA_LEGACY_TO_MODERN`, `WILDFLY_LEGACY_TO_MODERN`, `MICROSOFT_MODERNIZATION`, `ARM_MIGRATION`, `CLOUD_TO_CLOUD`), interactive dry-run cost shields, execution of `codmod create`, self-healing diagnostic collection (`codmod collect-logs`), and JSON telemetry. |
+| **`rewrite` (`skills/rewrite`)** | Skill | Language-agnostic rewrite brew protocol: ingests assessment reports, maps source-to-target runtimes, establishes strict contract parity, and cuts vertical slices into `05_PLAN.md`. |
+| **`@migration-scout`** | Agent | Autonomous codebase scanner detecting source language levels, application servers, and cloud SDK lock-in. |
+| **`@ast-grinder`** | Agent | AST transformation engine executing automated codemods, syntax modernization, and deprecated API replacements. |
+| **`@parity-auditor`** | Agent | Compares legacy inputs/outputs and API schemas against modern reimplementations to guarantee strict functional parity. |
+| **`@msbuild`** | Agent | Manages verbose legacy .NET and C++ builds during modernization passes without overflowing LLM context. |
+
+---
+
+## 🔄 Modernization Workflow
+
+```mermaid
+graph TD
+    Legacy[(Legacy Monolith)] --> Scout["@migration-scout<br/>(Framework & Version Scan)"]
+    Scout --> Assess["assess<br/>(GCP Auth & codmod create)"]
+    Assess --> Report["modernization_report.html"]
+    Report --> Rewrite["rewrite protocol<br/>(Parity Baseline & Vertical Slices)"]
+    Rewrite --> PRD["02_PRD.md & 05_PLAN.md"]
+    PRD --> Brewer["☕ bean-brewer<br/>(TDD Implementation & PR)"]
+    
+    Assess -.->|Telemetry & Progress| Cup["🍵 bean-cup<br/>(visual-dashboard.html)"]
+    Rewrite -.-> Cup
+```
+
+1. **Scan & Assess:** Run `/assess` to inspect the legacy codebase, estimate costs, and execute Google Cloud `codmod`.
+2. **Review Report:** Inspect the generated `modernization_report.html` and telemetry logs.
+3. **Formulate Parity Specification:** Run `/rewrite` to establish functional parity requirements and decompose the monolith into vertical slices (`02_PRD.md`, `05_PLAN.md`).
+4. **Execute & Verify:** Dispatch slices to `bean-brewer` for implementation and `@parity-auditor` for validation.
 
 ---
 
@@ -43,28 +74,6 @@ In software engineering, legacy monoliths and aging codebases are the coarse, un
 # Or global agy install
 agy plugin install .
 ```
-
----
-
-## 🛠️ Typical Workflow
-
-```mermaid
-graph TD
-    Legacy[(Legacy Monolith)] --> Scout["@migration-scout"]
-    Scout --> Assess["assess (codmod create)"]
-    Assess --> Report["modernization_report.html"]
-    Report --> Rewrite["rewrite protocol"]
-    Rewrite --> PRD["02_PRD.md & Vertical Slices"]
-    PRD --> Brewer["☕ bean-brewer (TDD & Delivery)"]
-    
-    Assess -.-> Cup["🍵 bean-cup (Dashboard & Telemetry)"]
-    Rewrite -.-> Cup
-```
-
-1. Run `/assess` in `bean-grinder` to scan the legacy repository and execute `codmod`.
-2. Inspect the generated `modernization_report.html`.
-3. Run `/rewrite` to produce `02_PRD.md` with vertical slices and contract parity matrices.
-4. Pass the slices to `bean-brewer` for implementation and delivery.
 
 ---
 
