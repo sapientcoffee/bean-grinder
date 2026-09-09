@@ -89,7 +89,14 @@ class TestAgentsSchema(unittest.TestCase):
             "graphify-scout.md",
             "migration-scout.md",
             "msbuild.md",
+            "review-arbiter.md",
+            "reviewer-architect.md",
+            "reviewer-engineer.md",
+            "reviewer-exec.md",
+            "reviewer-pm.md",
             "runtime-parity-verifier.md",
+            "seam-scout.md",
+            "spec-recovery-agent.md",
         ]
         present = set(os.listdir(self.agents_dir))
         for exp in expected:

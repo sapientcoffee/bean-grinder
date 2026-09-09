@@ -157,6 +157,9 @@ class TestGenerateDashboard(unittest.TestCase):
         self.assertIn("tab-slices", html)
         self.assertIn("tab-hubs", html)
         self.assertIn("tab-modules", html)
+        self.assertIn("tab-7rs", html)
+        self.assertIn("tab-seams", html)
+        self.assertIn("tab-data-cdc", html)
         self.assertIn("tab-codmod", html)
         self.assertIn("tab-graphify", html)
         self.assertIn("tab-plan", html)
@@ -212,6 +215,96 @@ class TestGenerateDashboard(unittest.TestCase):
             self.assertTrue(target.exists())
             self.assertEqual(target.read_text(encoding="utf-8"), "<html><body>Dashboard</body></html>")
 
+    def test_build_dashboard_with_review_matrix(self):
+        review_matrix_data = {
+            "current_round": 2,
+            "max_rounds": 3,
+            "convergence_threshold": 90.0,
+            "is_converged": True,
+            "circuit_breaker_tripped": False,
+            "rounds": [
+                {
+                    "round_number": 1,
+                    "verdict": "NEEDS_REVISION",
+                    "consensus_score": 65.0,
+                    "critical_count": 1,
+                    "high_count": 1,
+                    "medium_count": 0,
+                    "low_count": 0,
+                    "persona_reviews": {
+                        "reviewer-exec": {
+                            "status": "CHANGES_REQUESTED",
+                            "risk_level": "CRITICAL",
+                            "summary": "Dual-run cost exceeds budget",
+                            "findings": [
+                                {
+                                    "id": "EXEC-01",
+                                    "severity": "CRITICAL",
+                                    "category": "TCO_AND_CLOUD_COST",
+                                    "title": "Dual-Run Cost",
+                                    "concrete_scenario": "Running both DBs unmetered",
+                                    "actionable_remediation": "Cap dual run to 60 days"
+                                }
+                            ]
+                        }
+                    },
+                    "trade_offs": [],
+                    "directives": ["[EXEC-01]: Cap dual run to 60 days"],
+                    "findings": []
+                },
+                {
+                    "round_number": 2,
+                    "verdict": "CONVERGED_ROBUST",
+                    "consensus_score": 95.0,
+                    "critical_count": 0,
+                    "high_count": 0,
+                    "medium_count": 1,
+                    "low_count": 2,
+                    "persona_reviews": {
+                        "reviewer-exec": {
+                            "status": "APPROVED_ROBUST",
+                            "risk_level": "LOW",
+                            "summary": "Budget capped cleanly",
+                            "findings": []
+                        },
+                        "reviewer-architect": {
+                            "status": "APPROVED_ROBUST",
+                            "risk_level": "LOW",
+                            "summary": "Facade pattern protects domain",
+                            "findings": []
+                        }
+                    },
+                    "trade_offs": [
+                        {
+                            "id": "TRADE-01",
+                            "personas_involved": ["reviewer-exec", "reviewer-architect"],
+                            "conflict_summary": "Speed vs Purity",
+                            "arbiter_decision": "In-process facade",
+                            "plan_directive": "Introduce facade in Slice 1"
+                        }
+                    ],
+                    "directives": ["Introduce facade in Slice 1"],
+                    "findings": []
+                }
+            ]
+        }
+
+        html = build_dashboard_html(
+            matrix_data=self.matrix_data,
+            codmod_data=self.codmod_data,
+            graph_data=self.graph_data,
+            review_matrix_data=review_matrix_data,
+        )
+
+        self.assertIn("tab-review", html)
+        self.assertIn("🛡️ Adversarial Review", html)
+        self.assertIn("CONVERGED_ROBUST", html)
+        self.assertIn("95.0%", html)
+        self.assertIn("Cross-Functional Trade-Off Resolutions", html)
+        self.assertIn("Introduce facade in Slice 1", html)
+        self.assertIn("reviewer-exec", html)
+
 
 if __name__ == "__main__":
     unittest.main()
+

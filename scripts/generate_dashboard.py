@@ -324,6 +324,263 @@ def render_module_card_html(cid: Any, mod: Dict[str, Any]) -> str:
     """
 
 
+def render_portfolio_7rs_rows(portfolio: List[Dict[str, Any]]) -> str:
+    """Helper to render 7 Rs portfolio rationalization rows."""
+    if not portfolio:
+        return "<tr><td colspan='4' style='text-align: center; color: var(--muted);'>No 7 Rs portfolio items calculated.</td></tr>"
+    rows = []
+    for p in portfolio:
+        strategy = p.get("strategy", "Refactor")
+        badge_cls = "badge-accent"
+        strat_lower = strategy.lower()
+        if "retire" in strat_lower:
+            badge_cls = "badge-danger"
+        elif "replatform" in strat_lower or "rehost" in strat_lower:
+            badge_cls = "badge-accent"
+        elif "rearchitect" in strat_lower or "rebuild" in strat_lower:
+            badge_cls = "badge-warning"
+        
+        in_deg = p.get("inbound_callers", 0)
+        out_deg = p.get("outbound_dependencies", 0)
+        rows.append(f"""
+        <tr>
+          <td><strong>{html.escape(p.get('module_name', ''))}</strong></td>
+          <td><span class="badge {badge_cls}">{html.escape(strategy)}</span></td>
+          <td><span style="color: var(--accent); font-weight: 600;">{in_deg} callers</span> / <span style="color: var(--muted);">{out_deg} deps</span></td>
+          <td style="font-size: 13px; line-height: 1.4;">{html.escape(p.get('rationale', ''))}</td>
+        </tr>
+        """)
+    return "".join(rows)
+
+
+def render_seams_rows(seams: List[Dict[str, Any]]) -> str:
+    """Helper to render Michael Feathers seams inventory rows."""
+    if not seams:
+        return "<tr><td colspan='4' style='text-align: center; color: var(--muted);'>No explicit seams inventoried.</td></tr>"
+    rows = []
+    for s in seams:
+        rows.append(f"""
+        <tr>
+          <td><span class="mono" style="font-weight: 600; color: var(--fg);">{html.escape(s.get('target', ''))}</span></td>
+          <td><span class="badge badge-accent">{html.escape(s.get('type', 'Object Seam'))}</span></td>
+          <td><strong>{html.escape(s.get('technique', ''))}</strong></td>
+          <td style="font-size: 13px; line-height: 1.4;">{html.escape(s.get('sprout_opportunity', ''))}</td>
+        </tr>
+        """)
+    return "".join(rows)
+
+
+def render_review_tab_html(review_data: Optional[Dict[str, Any]]) -> str:
+    """Helper to render the Adversarial Review Tab."""
+    if not review_data:
+        return "<p><em>No adversarial review data available. Run <code>python3 scripts/review_loop.py</code> to execute the multi-persona review loop.</em></p>"
+
+    rounds = review_data.get("rounds", [])
+    latest_round = rounds[-1] if rounds else {}
+    current_round = review_data.get("current_round", 1)
+    max_rounds = review_data.get("max_rounds", 3)
+    verdict = latest_round.get("verdict", "PENDING")
+    consensus_score = latest_round.get("consensus_score", 0.0)
+    crit = latest_round.get("critical_count", 0)
+    high = latest_round.get("high_count", 0)
+    med = latest_round.get("medium_count", 0)
+    low = latest_round.get("low_count", 0)
+
+    score_color = "var(--success)" if consensus_score >= 90.0 else ("var(--warning)" if consensus_score >= 70.0 else "var(--danger)")
+    badge_cls = "badge-success" if verdict == "CONVERGED_ROBUST" else ("badge-danger" if verdict == "CIRCUIT_BREAKER_TRIGGERED" else "badge-warning")
+
+    # Personas cards
+    persona_meta = {
+        "reviewer-exec": ("💼 Executive", "TCO, Cloud Run-Rate, Licensing & Rollback"),
+        "reviewer-engineer": ("💻 Engineering", "AST Safety, DX, Build Times & Testability"),
+        "reviewer-architect": ("🏛️ Architecture", "Central Hubs, ACLs, Scalability & State"),
+        "reviewer-pm": ("📋 Product & Parity", "Parity, Undocumented Quirks & Gherkin AC"),
+    }
+    p_reviews = latest_round.get("persona_reviews", {})
+    persona_cards = []
+    for p_id in ["reviewer-exec", "reviewer-engineer", "reviewer-architect", "reviewer-pm"]:
+        title, focus = persona_meta.get(p_id, (p_id, "Specialized Audit"))
+        p_obj = p_reviews.get(p_id, {})
+        status = p_obj.get("status", "NOT_REVIEWED")
+        risk = p_obj.get("risk_level", "N/A")
+        summary = p_obj.get("summary", "")
+        f_list = p_obj.get("findings", [])
+        c_p = sum(1 for f in f_list if f.get("severity") == "CRITICAL")
+        h_p = sum(1 for f in f_list if f.get("severity") == "HIGH")
+
+        status_badge = '<span class="badge badge-success">Approved</span>' if status == "APPROVED_ROBUST" else '<span class="badge badge-warning">Changes Req</span>'
+
+        persona_cards.append(f"""
+        <div class="kpi-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-weight: 700; font-size: 15px;">{title}</span>
+              {status_badge}
+            </div>
+            <div class="kpi-subtitle" style="margin-bottom: 10px;">{html.escape(focus)}</div>
+            <p style="font-size: 12px; color: var(--muted); margin: 0 0 10px 0; line-height: 1.4;">{html.escape(summary[:120])}{'...' if len(summary) > 120 else ''}</p>
+          </div>
+          <div style="display: flex; gap: 8px; font-size: 11px; padding-top: 8px; border-top: 1px solid var(--card-border);">
+            <span style="color: var(--danger); font-weight: 600;">{c_p} Critical</span>
+            <span style="color: var(--warning); font-weight: 600;">{h_p} High</span>
+            <span style="color: var(--muted); margin-left: auto;">Risk: {risk}</span>
+          </div>
+        </div>
+        """)
+
+    # Trade-offs
+    trade_offs = latest_round.get("trade_offs", [])
+    trade_off_rows = []
+    if trade_offs:
+        for to in trade_offs:
+            stakeholders = ", ".join(to.get("personas_involved", []))
+            trade_off_rows.append(f"""
+            <tr>
+              <td><strong>{html.escape(to.get('id', ''))}</strong></td>
+              <td><span style="font-size: 12px; color: var(--muted);">{html.escape(stakeholders)}</span></td>
+              <td>{html.escape(to.get('conflict_summary', ''))}</td>
+              <td style="font-size: 13px; line-height: 1.4;"><strong style="color: var(--accent);">{html.escape(to.get('arbiter_decision', ''))}</strong><br><span style="font-family: monospace; font-size: 11px; color: var(--muted);">Directive: {html.escape(to.get('plan_directive', ''))}</span></td>
+            </tr>
+            """)
+    trade_offs_html = "".join(trade_off_rows) or "<tr><td colspan='4' style='text-align: center; color: var(--muted);'>No active cross-functional trade-offs.</td></tr>"
+
+    # Findings
+    findings = latest_round.get("findings", [])
+    finding_rows = []
+    if findings:
+        for f in findings:
+            sev = f.get("severity", "MEDIUM")
+            sev_badge = f'<span class="badge badge-{"danger" if sev == "CRITICAL" else ("warning" if sev == "HIGH" else "accent")}">{sev}</span>'
+            finding_rows.append(f"""
+            <tr>
+              <td>{sev_badge}</td>
+              <td><code>{html.escape(f.get('id', ''))}</code></td>
+              <td><strong>{html.escape(f.get('title', ''))}</strong><br><span style="font-size: 11px; color: var(--muted);">@{html.escape(f.get('persona', ''))} · {html.escape(f.get('category', ''))}</span></td>
+              <td style="font-size: 12px; line-height: 1.4;">{html.escape(f.get('concrete_scenario', ''))}</td>
+              <td style="font-size: 12px; line-height: 1.4; color: var(--accent);">{html.escape(f.get('actionable_remediation', ''))}</td>
+            </tr>
+            """)
+    findings_html = "".join(finding_rows) or "<tr><td colspan='5' style='text-align: center; color: var(--success); font-weight: 600;'>🎉 Zero active blockers! All stakeholder criteria satisfied.</td></tr>"
+
+    # Rounds history
+    round_rows = []
+    for r in rounds:
+        r_num = r.get("round_number", 1)
+        r_v = r.get("verdict", "")
+        r_sc = r.get("consensus_score", 0.0)
+        round_rows.append(f"""
+        <tr>
+          <td><strong>Round {r_num}</strong></td>
+          <td><span class="badge badge-accent">{r_v}</span></td>
+          <td><strong style="color: var(--accent);">{r_sc:.1f}%</strong></td>
+          <td><span style="color: var(--danger);">{r.get('critical_count', 0)}</span></td>
+          <td><span style="color: var(--warning);">{r.get('high_count', 0)}</span></td>
+          <td>{r.get('medium_count', 0)}</td>
+        </tr>
+        """)
+    rounds_html = "".join(round_rows)
+
+    return f"""
+    <!-- Review Scorecard Overview -->
+    <div class="scorecard-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Consensus Score <span>🛡️</span></div>
+        <div class="kpi-value" style="color: {score_color};">{consensus_score:.1f}%</div>
+        <div class="kpi-subtitle">Convergence threshold: {review_data.get('convergence_threshold', 90.0)}%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Review Iteration <span>🔄</span></div>
+        <div class="kpi-value">Round {current_round} <span style="font-size: 16px; color: var(--muted);">/ {max_rounds}</span></div>
+        <div class="kpi-subtitle">Status: <span class="badge {badge_cls}">{verdict}</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Blockers <span>🚨</span></div>
+        <div class="kpi-value" style="color: var(--danger);">{crit + high}</div>
+        <div class="kpi-subtitle">{crit} Critical · {high} High Severity</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Minor / Edge Issues <span>⚠️</span></div>
+        <div class="kpi-value">{med + low}</div>
+        <div class="kpi-subtitle">{med} Medium · {low} Low Severity</div>
+      </div>
+    </div>
+
+    <!-- Multi-Persona Reviewers Grid -->
+    <h3 style="margin: 24px 0 12px 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+      <span>👥</span> Stakeholder Reviewer Swarm
+    </h3>
+    <div class="scorecard-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom: 24px;">
+      {''.join(persona_cards)}
+    </div>
+
+    <!-- Trade-Off Resolutions Panel -->
+    <div class="panel" style="margin-bottom: 24px;">
+      <div class="panel-header">
+        <div class="panel-title">⚖️ Cross-Functional Trade-Off Resolutions (@review-arbiter)</div>
+        <span class="badge badge-accent">{len(trade_offs)} Resolved</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 10%;">ID</th>
+            <th style="width: 20%;">Stakeholders</th>
+            <th style="width: 35%;">Conflict Tension</th>
+            <th style="width: 35%;">Arbiter Decision &amp; Plan Directive</th>
+          </tr>
+        </thead>
+        <tbody>
+          {trade_offs_html}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Active Flaws & Remediation Directives -->
+    <div class="panel" style="margin-bottom: 24px;">
+      <div class="panel-header">
+        <div class="panel-title">🚨 Active Flaws &amp; Actionable Remediation Directives</div>
+        <span class="badge badge-accent">{len(findings)} Total</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 10%;">Severity</th>
+            <th style="width: 12%;">ID</th>
+            <th style="width: 25%;">Finding Title</th>
+            <th style="width: 28%;">Concrete Failure Scenario</th>
+            <th style="width: 25%;">Required Plan Remediation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {findings_html}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Multi-Round Progression History -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">🔄 Iterative Hardening History Across Rounds</div>
+        <span class="badge badge-accent">{len(rounds)} Rounds</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 15%;">Round</th>
+            <th style="width: 25%;">Verdict</th>
+            <th style="width: 20%;">Consensus Score</th>
+            <th style="width: 15%;">Critical</th>
+            <th style="width: 15%;">High</th>
+            <th style="width: 10%;">Medium</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rounds_html}
+        </tbody>
+      </table>
+    </div>
+    """
+
+
 def build_dashboard_html(
     matrix_data: Dict[str, Any],
     codmod_data: Dict[str, Any],
@@ -335,6 +592,7 @@ def build_dashboard_html(
     codmod_file_url: Optional[str] = None,
     graph_file_url: Optional[str] = None,
     timestamp_str: Optional[str] = None,
+    review_matrix_data: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Constructs the complete, responsive modernization_dashboard.html."""
     app_title = matrix_data.get("application_title", "Application Modernization")
@@ -417,6 +675,45 @@ def build_dashboard_html(
 
     work_plan_items = "".join(f"<li>{html.escape(t)}</li>" for t in work_plan) or "<li>No work plan tasks.</li>"
     flagged_files_rendered = "<br>".join(html.escape(f) for f in flagged_files)
+
+    portfolio_7rs = matrix_data.get("portfolio_7rs", [])
+    seams_inventory = matrix_data.get("seams_inventory", [])
+    data_architecture = matrix_data.get("data_architecture", {})
+    mikado_tree = matrix_data.get("mikado_tree", {})
+
+    portfolio_7rs_rendered = render_portfolio_7rs_rows(portfolio_7rs)
+    seams_rendered = render_seams_rows(seams_inventory)
+
+    data_strategy = html.escape(data_architecture.get("strategy", "Transactional Outbox Pattern with Log-Based CDC"))
+    cdc_engine = html.escape(data_architecture.get("cdc_engine", "Debezium log-tailing (WAL/binlog) streaming to Kafka"))
+    forbidden = [html.escape(x) for x in data_architecture.get("forbidden_patterns", ["Application-level dual writes", "Two-Phase Commit (2PC) / XA distributed locks"])]
+    forbidden_html = "".join(f'<li style="color: var(--danger); font-weight: 600;">🚫 {f}</li>' for f in forbidden)
+    cutover_phases = data_architecture.get("cutover_phases", [])
+    cutover_rows = "".join(
+        f'<tr><td><strong>{html.escape(cp.get("phase", ""))}</strong></td><td><span class="badge badge-accent">{html.escape(cp.get("name", ""))}</span></td><td style="font-size: 13px; line-height: 1.4;">{html.escape(cp.get("description", ""))}</td></tr>'
+        for cp in cutover_phases
+    ) or '<tr><td colspan="3" style="text-align: center; color: var(--muted);">Standard 4-phase cutover protocol applies.</td></tr>'
+
+    mikado_goal = html.escape(mikado_tree.get("root_goal", "Application Modernization"))
+    mikado_rule = html.escape(mikado_tree.get("refactoring_rule", "On compile/test breakages, immediately execute git reset --hard, log prerequisite, and solve leaf prerequisites first."))
+    mikado_prereqs = mikado_tree.get("prerequisites", [])
+    mikado_rows = "".join(
+        f'<tr><td><code>Level {p.get("level", 0)}</code></td><td><strong>{html.escape(p.get("node", ""))}</strong></td><td><span class="chip">{html.escape(p.get("type", ""))}</span></td><td><span class="badge badge-accent">{html.escape(p.get("status", ""))}</span></td></tr>'
+        for p in mikado_prereqs
+    ) or '<tr><td colspan="4" style="text-align: center; color: var(--muted);">Mikado dependency tree generated during execution.</td></tr>'
+
+    review_tab_btn = ""
+    review_tab_pane = ""
+    if review_matrix_data:
+        rev_rounds = review_matrix_data.get("rounds", [])
+        rev_score = rev_rounds[-1].get("consensus_score", 0.0) if rev_rounds else 0.0
+        review_tab_btn = f'<button class="tab-button" onclick="showTab(\'review\')">🛡️ Adversarial Review ({rev_score:.0f}%)</button>'
+        review_tab_pane = f"""
+    <!-- ================= TAB: ADVERSARIAL REVIEW ================= -->
+    <div id="tab-review" class="tab-pane">
+      {render_review_tab_html(review_matrix_data)}
+    </div>
+    """
 
     return f"""<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -1040,8 +1337,12 @@ def build_dashboard_html(
     <button class="tab-button" onclick="showTab('slices')">⚡ Vertical Slices (Kanban)</button>
     <button class="tab-button" onclick="showTab('hubs')">⚠️ Central Dependency Hubs ({total_hubs})</button>
     <button class="tab-button" onclick="showTab('modules')">🧩 Component Modules ({total_mods})</button>
+    <button class="tab-button" onclick="showTab('7rs')">🏛️ 7 Rs Strategy</button>
+    <button class="tab-button" onclick="showTab('seams')">✂️ Feathers' Seams</button>
+    <button class="tab-button" onclick="showTab('data-cdc')">🔄 Outbox & CDC</button>
     <button class="tab-button" onclick="showTab('codmod')">📋 Google Cloud CodMod Report</button>
     <button class="tab-button" onclick="showTab('graphify')">🕸️ Graphify AST Visualizer</button>
+    {review_tab_btn}
     <button class="tab-button" onclick="showTab('plan')">🗺️ Migration Plan (05_PLAN.md)</button>
   </nav>
 
@@ -1201,6 +1502,113 @@ def build_dashboard_html(
       </div>
     </div>
 
+    <!-- ================= TAB: 7 RS PORTFOLIO STRATEGY ================= -->
+    <div id="tab-7rs" class="tab-pane">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🏛️ 7 Rs Portfolio Rationalization Matrix</div>
+          <span class="badge badge-accent">Portfolio Architecture</span>
+        </div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          Evaluates each detected subsystem across Retain, Retire, Rehost, Relocate, Replatform, Refactor, and Rebuild strategies, avoiding default greenfield rebuilds to protect domain edge-case rules.
+        </p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Component Module</th>
+              <th style="width: 20%;">7 Rs Strategy</th>
+              <th style="width: 20%;">Inbound / Outbound</th>
+              <th style="width: 35%;">Strategic Rationale</th>
+            </tr>
+          </thead>
+          <tbody>
+            {portfolio_7rs_rendered}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= TAB: FEATHERS' SEAMS ================= -->
+    <div id="tab-seams" class="tab-pane">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">✂️ Michael Feathers' Seams &amp; Decoupling Boundaries</div>
+          <span class="badge badge-accent">Non-Invasive Interventions</span>
+        </div>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">
+          Identifies Object, Link, and Preprocessor seams to enable behavioral modifications, Sprout/Wrap methods, and Branch by Abstraction without destabilizing tightly coupled legacy callers.
+        </p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Target Component</th>
+              <th style="width: 15%;">Seam Type</th>
+              <th style="width: 25%;">Decoupling Technique</th>
+              <th style="width: 35%;">Sprout / Wrap Opportunity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {seams_rendered}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================= TAB: DATA MODERNIZATION & CDC ================= -->
+    <div id="tab-data-cdc" class="tab-pane">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🔄 Data Modernization &amp; Transactional Outbox + CDC</div>
+          <span class="badge badge-accent">State Integrity</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div class="kpi-card">
+            <div class="kpi-label">Primary Pattern</div>
+            <div style="font-size: 15px; font-weight: 700; color: var(--accent); margin: 6px 0;">{data_strategy}</div>
+            <div class="kpi-subtitle">Engine: {cdc_engine}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Strictly Prohibited Anti-Patterns</div>
+            <ul style="padding-left: 18px; margin-top: 8px; font-size: 12px; line-height: 1.5;">
+              {forbidden_html}
+            </ul>
+          </div>
+        </div>
+
+        <h4 style="margin: 20px 0 10px;">4-Phase Data Cutover Protocol</h4>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Phase</th>
+              <th style="width: 25%;">Cutover Milestone</th>
+              <th style="width: 60%;">Execution &amp; Rollback Protocol</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cutover_rows}
+          </tbody>
+        </table>
+
+        <h4 style="margin: 24px 0 10px;">Mikado Method Refactoring Graph (Leaf-to-Root)</h4>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+          <strong>Goal:</strong> {mikado_goal} • <strong>Safety Rule:</strong> {mikado_rule}
+        </p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Level</th>
+              <th style="width: 40%;">Modernization Prerequisite Node</th>
+              <th style="width: 20%;">Node Type</th>
+              <th style="width: 25%;">Execution Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mikado_rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ================= TAB 5: CODMOD ASSESSMENT REPORT ================= -->
     <div id="tab-codmod" class="tab-pane">
       <div class="embedded-container">
@@ -1259,6 +1667,8 @@ def build_dashboard_html(
         </div>
       </div>
     </div>
+
+    {review_tab_pane}
 
     <!-- ================= TAB 7: MIGRATION PLAN ================= -->
     <div id="tab-plan" class="tab-pane">
@@ -1419,6 +1829,7 @@ def generate_modernization_dashboard(
     plan_path: Optional[Path] = None,
     brain_dir: Optional[str] = None,
     mirror: bool = True,
+    review_matrix_data: Optional[Dict[str, Any]] = None,
 ) -> Path:
     """
     Main orchestration entrypoint to generate modernization_dashboard.html,
@@ -1426,6 +1837,22 @@ def generate_modernization_dashboard(
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     dashboard_path = output_dir / "modernization_dashboard.html"
+
+    # Auto-load adversarial review matrix if not explicitly passed
+    if review_matrix_data is None:
+        rev_file = output_dir / "adversarial_review_matrix.json"
+        if rev_file.exists():
+            try:
+                with open(rev_file, "r", encoding="utf-8") as f:
+                    review_matrix_data = json.load(f)
+            except Exception:
+                pass
+        elif plan_path and (plan_path.parent / "adversarial_review_matrix.json").exists():
+            try:
+                with open(plan_path.parent / "adversarial_review_matrix.json", "r", encoding="utf-8") as f:
+                    review_matrix_data = json.load(f)
+            except Exception:
+                pass
 
     codmod_rel_url = None
     codmod_file_url = None
@@ -1463,6 +1890,7 @@ def generate_modernization_dashboard(
         graph_rel_url=graph_rel_url,
         codmod_file_url=codmod_file_url,
         graph_file_url=graph_file_url,
+        review_matrix_data=review_matrix_data,
     )
 
     dashboard_path.write_text(html_content, encoding="utf-8")
@@ -1478,6 +1906,18 @@ def generate_modernization_dashboard(
             aux_files.append((matrix_file, "migration_matrix.json"))
         if plan_path and plan_path.exists():
             aux_files.append((plan_path, "05_plan.md"))
+
+        rev_matrix_file = output_dir / "adversarial_review_matrix.json"
+        if not rev_matrix_file.exists() and plan_path:
+            rev_matrix_file = plan_path.parent / "adversarial_review_matrix.json"
+        if rev_matrix_file.exists():
+            aux_files.append((rev_matrix_file, "adversarial_review_matrix.json"))
+
+        rev_report_file = output_dir / "05_ADVERSARIAL_REVIEW.md"
+        if not rev_report_file.exists() and plan_path:
+            rev_report_file = plan_path.parent / "05_ADVERSARIAL_REVIEW.md"
+        if rev_report_file.exists():
+            aux_files.append((rev_report_file, "05_adversarial_review.md"))
 
         mirrored = mirror_dashboard(
             dashboard_path=dashboard_path,
@@ -1500,6 +1940,7 @@ def main():
     parser.add_argument("--graph-html", type=Path, help="Path to graphify-out/graph.html")
     parser.add_argument("--graph-report", type=Path, help="Path to graphify-out/GRAPH_REPORT.md")
     parser.add_argument("--plan", type=Path, help="Path to 05_PLAN.md")
+    parser.add_argument("--review-matrix", type=Path, help="Path to adversarial_review_matrix.json")
     parser.add_argument("--output-dir", type=Path, default=Path("."), help="Output directory")
     parser.add_argument("--brain-dir", type=str, help="Explicit brain artifact directory")
     parser.add_argument("--no-mirror", action="store_true", help="Disable dual-write brain mirroring")
@@ -1511,6 +1952,14 @@ def main():
 
     with open(args.graph, "r", encoding="utf-8") as f:
         graph_data = json.load(f)
+
+    review_matrix_data = None
+    if args.review_matrix and args.review_matrix.exists():
+        try:
+            with open(args.review_matrix, "r", encoding="utf-8") as f:
+                review_matrix_data = json.load(f)
+        except Exception:
+            pass
 
     try:
         try:
@@ -1536,6 +1985,7 @@ def main():
         plan_path=args.plan,
         brain_dir=args.brain_dir,
         mirror=not args.no_mirror,
+        review_matrix_data=review_matrix_data,
     )
 
 

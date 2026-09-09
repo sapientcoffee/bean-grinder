@@ -152,9 +152,12 @@ class TestDigestReport(unittest.TestCase):
         slice_names = [s["name"] for s in matrix["slices"]]
         self.assertIn("Build & Runtime Foundation", slice_names)
         self.assertIn("Standalone Leaf Modules & Lookup Models", slice_names)
-        self.assertIn("Core Domain Repositories & Data Layer", slice_names)
-        self.assertIn("Central Dependency Hubs & Monolith Decoupling", slice_names)
-        self.assertIn("Ingress Controllers & Edge Adapters", slice_names)
+        self.assertIn("portfolio_7rs", matrix)
+        self.assertIn("seams_inventory", matrix)
+        self.assertIn("data_architecture", matrix)
+        self.assertIn("mikado_tree", matrix)
+        self.assertEqual(matrix["data_architecture"]["cdc_engine"], "Debezium log-tailing (WAL/binlog) streaming to Kafka")
+        self.assertEqual(len(matrix["data_architecture"]["cutover_phases"]), 4)
 
     def test_generate_plan_markdown(self):
         codmod_data = parse_codmod_report(self.mock_html)
@@ -165,6 +168,10 @@ class TestDigestReport(unittest.TestCase):
         self.assertIn("# 🗺️ Modernization Implementation Plan", plan_md)
         self.assertIn("Component Modules / Subsystems", plan_md)
         self.assertIn("Central Dependency Hubs", plan_md)
+        self.assertIn("7 Rs Portfolio Rationalization Matrix", plan_md)
+        self.assertIn("Michael Feathers' Seams & Decoupling Boundaries", plan_md)
+        self.assertIn("Data Modernization & State Integrity (Transactional Outbox + CDC)", plan_md)
+        self.assertIn("Mikado Method Dependency Graph", plan_md)
         self.assertIn("Slice 0: Build & Runtime Foundation", plan_md)
         self.assertIn("Slice 3: Central Dependency Hubs & Monolith Decoupling", plan_md)
         self.assertIn("Verification", plan_md)

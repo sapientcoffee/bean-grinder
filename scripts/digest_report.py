@@ -444,6 +444,85 @@ def synthesize_migration_slices(
         }
     ]
 
+    # Build 7 Rs portfolio rationalization matrix
+    portfolio_7rs = []
+    for cid, mod in modules.items():
+        name = mod["name"]
+        in_deg = mod.get("in_degree", 0)
+        out_deg = mod.get("out_degree", 0)
+        hubs_in_mod = mod.get("central_hubs", [])
+        name_lower = name.lower()
+
+        if in_deg == 0 and out_deg == 0 and len(mod.get("nodes", [])) <= 1:
+            strategy = "Retire"
+            rationale = "Zero inbound callers and outbound dependencies detected. Candidate dead code."
+        elif any(k in name_lower for k in ["wrapper", "build", "ci", "env", "configuration"]):
+            strategy = "Replatform"
+            rationale = "Target runtime upgrade (e.g. Java 21 / .NET 9 containerization and CI modernization)."
+        elif len(hubs_in_mod) > 0 or in_deg >= 10:
+            strategy = "Refactor / Rearchitect"
+            rationale = "High blast radius and coupling. Extract bounded context via Anti-Corruption Layer and Branch by Abstraction."
+        else:
+            strategy = "Refactor"
+            rationale = "Standardize on modern idiomatic patterns, non-blocking I/O, and domain validation."
+
+        portfolio_7rs.append({
+            "module_id": cid,
+            "module_name": name,
+            "strategy": strategy,
+            "inbound_callers": in_deg,
+            "outbound_dependencies": out_deg,
+            "central_hubs": hubs_in_mod,
+            "rationale": rationale
+        })
+
+    # Build Feathers' Seams & Decoupling inventory
+    seams_inventory = []
+    for hub in central_hubs[:10]:
+        seams_inventory.append({
+            "target": hub["label"],
+            "type": "Object Seam",
+            "technique": "Branch by Abstraction / Interface Extraction",
+            "sprout_opportunity": "Introduce Sprout Method/Class for new domain validation to prevent modifying legacy methods.",
+            "blast_radius": f"{hub.get('total_connections', hub.get('degree', 0))} connections ({hub.get('inbound_callers', hub.get('in_degree', 0))} callers)"
+        })
+    for m in infra_modules[:3]:
+        seams_inventory.append({
+            "target": m["name"],
+            "type": "Link Seam",
+            "technique": "Build-Time Dependency Substitution / Compiler Target Upgrade",
+            "sprout_opportunity": "Isolate toolchain plugins without altering production source files.",
+            "blast_radius": f"{m.get('in_degree', 0)} callers"
+        })
+
+    # Build Data Modernization & Outbox CDC Architecture
+    data_architecture = {
+        "strategy": "Transactional Outbox Pattern with Log-Based Change Data Capture (CDC)",
+        "forbidden_patterns": ["Application-level dual writes", "Two-Phase Commit (2PC) / XA distributed locks"],
+        "cdc_engine": "Debezium log-tailing (WAL/binlog) streaming to Kafka",
+        "coordination": "Distributed Sagas with idempotent receivers and semantic compensation",
+        "cutover_phases": [
+            {"phase": "Phase A", "name": "Initial Snapshot & WAL Tailing", "description": "Stream historical tables to modern data store while tailing live database changes."},
+            {"phase": "Phase B", "name": "Monolith Authoritative with CDC Sync", "description": "Legacy system remains primary. CDC replicates mutations to modernized schema with lag monitoring."},
+            {"phase": "Phase C", "name": "Target Authoritative with Reverse-CDC", "description": "Switch primary write traffic to modern microservice; reverse CDC streams updates back to legacy for instant rollback safety."},
+            {"phase": "Phase D", "name": "Decommission Synchronization", "description": "Sever CDC pipelines and archive legacy datastore once stability KPIs are satisfied."}
+        ]
+    }
+
+    # Build Mikado Dependency Tree
+    mikado_tree = {
+        "root_goal": f"Modernize {codmod_data.get('title', 'Application')} to Cloud Run Architecture",
+        "refactoring_rule": "On compile/test breakages, immediately execute git reset --hard, log prerequisite, and solve leaf prerequisites first.",
+        "prerequisites": [
+            {"level": 0, "node": "Slice 0: Runtime Toolchain & CI Wrappers", "status": "Ready", "type": "Leaf"},
+            {"level": 1, "node": "Slice 1: Leaf Domain Models & DTOs", "status": "Blocked by Slice 0", "type": "Leaf"},
+            {"level": 2, "node": "Slice 2: Core Domain Repositories & Outbox CDC", "status": "Blocked by Slice 1", "type": "Branch"},
+            {"level": 3, "node": "Slice 3: Central Dependency Hubs (ACLs & Abstractions)", "status": "Blocked by Slice 2", "type": "Branch"},
+            {"level": 4, "node": "Slice 4: Ingress Controllers & Strangler Interception", "status": "Blocked by Slice 3", "type": "Branch"},
+            {"level": 5, "node": "Slice 5: Cloud Run Hardening & Production SRE", "status": "Blocked by Slice 4", "type": "Root"}
+        ]
+    }
+
     return {
         "application_title": codmod_data.get("title", "Modernized Application"),
         "total_component_modules": len(modules),
@@ -456,7 +535,11 @@ def synthesize_migration_slices(
         "communities": modules,  # Backward-compatible alias
         "central_dependency_hubs": central_hubs,
         "god_nodes": central_hubs,  # Backward-compatible alias
-        "slices": slices
+        "slices": slices,
+        "portfolio_7rs": portfolio_7rs,
+        "seams_inventory": seams_inventory,
+        "data_architecture": data_architecture,
+        "mikado_tree": mikado_tree
     }
 
 
@@ -465,6 +548,10 @@ def generate_plan_markdown(matrix: Dict[str, Any], output_path: Path) -> str:
     hubs = matrix.get("central_dependency_hubs", matrix.get("god_nodes", []))
     total_mods = matrix.get("total_component_modules", matrix.get("total_communities", 0))
     total_hubs = matrix.get("total_central_dependency_hubs", matrix.get("total_god_nodes", len(hubs)))
+    portfolio = matrix.get("portfolio_7rs", [])
+    seams = matrix.get("seams_inventory", [])
+    data_arch = matrix.get("data_architecture", {})
+    mikado = matrix.get("mikado_tree", {})
 
     lines = [
         f"# 🗺️ Modernization Implementation Plan: {matrix['application_title']}",
@@ -494,6 +581,71 @@ def generate_plan_markdown(matrix: Dict[str, Any], output_path: Path) -> str:
         lines.append(
             f"| {idx} | `{hub['label']}` | {deg} | {in_deg} callers / {out_deg} dependencies | {mod_name} | Encapsulate with Interface / Facade |"
         )
+
+    if portfolio:
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 🏛️ 7 Rs Portfolio Rationalization Matrix",
+            "| Component Module | Strategy | Inbound / Outbound | Rationale |",
+            "| :--- | :---: | :---: | :--- |"
+        ])
+        for p in portfolio[:10]:
+            lines.append(
+                f"| **{p['module_name']}** | `{p['strategy']}` | {p['inbound_callers']} callers / {p['outbound_dependencies']} deps | {p['rationale']} |"
+            )
+
+    if seams:
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## ✂️ Michael Feathers' Seams & Decoupling Boundaries",
+            "| Target Component | Seam Type | Decoupling Technique | Sprout / Wrap Intervention Opportunity |",
+            "| :--- | :---: | :--- | :--- |"
+        ])
+        for sm in seams[:8]:
+            lines.append(
+                f"| `{sm['target']}` | **{sm['type']}** | {sm['technique']} | {sm['sprout_opportunity']} |"
+            )
+
+    if data_arch:
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 🔄 Data Modernization & State Integrity (Transactional Outbox + CDC)",
+            f"> **Strategy:** {data_arch.get('strategy')}",
+            f"> **Forbidden Anti-Patterns:** {', '.join(data_arch.get('forbidden_patterns', []))}",
+            f"> **CDC Engine:** {data_arch.get('cdc_engine')}",
+            "",
+            "### 4-Phase Data Cutover Protocol:",
+            "| Phase | Name | Cutover Execution Protocol |",
+            "| :---: | :--- | :--- |"
+        ])
+        for cp in data_arch.get("cutover_phases", []):
+            lines.append(f"| **{cp['phase']}** | {cp['name']} | {cp['description']} |")
+
+    if mikado and mikado.get("prerequisites"):
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 🌳 Mikado Method Dependency Graph (Leaf-to-Root Execution Flow)",
+            f"> **Root Modernization Objective:** {mikado.get('root_goal')}",
+            f"> **Safety Constraint:** {mikado.get('refactoring_rule')}",
+            "",
+            "```mermaid",
+            "graph BT",
+            f"  R[\"{mikado.get('root_goal')}\"]"
+        ])
+        for idx, prereq in enumerate(mikado.get("prerequisites", [])):
+            lines.append(f"  P{idx}[\"{prereq['node']}\"] --> R")
+        lines.extend([
+            "```",
+            ""
+        ])
 
     lines.extend([
         "",
@@ -538,6 +690,15 @@ def generate_plan_markdown(matrix: Dict[str, Any], output_path: Path) -> str:
             "---",
             ""
         ])
+
+    lines.extend([
+        "## 🛡️ Adversarial Review & Hardening Audit",
+        "- **Audit Status:** `PENDING_REVIEW`",
+        "- **Reviewer Swarm:** `@reviewer-exec`, `@reviewer-engineer`, `@reviewer-architect`, `@reviewer-pm`",
+        "- **Arbiter:** `@review-arbiter`",
+        "- *(Execute review loop via `python3 scripts/review_loop.py --plan-dir <plan_dir>` or `rewrite` Step 5.5)*",
+        ""
+    ])
 
     return "\n".join(lines)
 

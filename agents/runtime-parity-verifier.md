@@ -39,14 +39,23 @@ You run in an active execution sandbox subagent session. Rather than relying sol
 - Synthetic input fixture payloads (JSON, query parameters, CLI flags, or mock events).
 
 ## Replay Verification Protocol
-1. **Replay Execution**: Execute both implementations against identical deterministic input fixtures using `run_shell_command`.
-2. **Status & Contract Verification**:
-   - Compare returned HTTP status codes / exit codes.
-   - Compare header semantics and content types.
-3. **Deep Payload Diffing**:
+1. **Golden Master Baseline Capture**:
+   - Record comprehensive Golden Master execution baselines across known input domains before modifying target components.
+   - Assert system reality: capture boundary outputs, exceptions, and quirks rather than idealized expectations.
+
+2. **Parallel Run & Traffic Shadowing (GitHub Scientist Pattern)**:
+   - Configure asynchronous request shadowing: primary execution runs through the legacy baseline while a mirrored, non-blocking request is evaluated by the modern candidate.
+   - Intercept and compare returned payloads, HTTP status codes, execution latencies (p50, p99), and uncaught exceptions.
+
+3. **Side-Effect Boundary Safety (Test Doubles & Spies)**:
+   - Crucial constraint: When shadowing traffic or replaying test fixtures against candidate microservices, deploy **Test Doubles** or **Spy Patterns** at external write boundaries (e.g. payment processors, financial ledgers, transactional SMS/email APIs).
+   - Verify that intended side-effect calls are recorded by the Spy double without executing uncommitted or duplicate modifications against production downstream services.
+
+4. **Deep Payload Diffing & Structural Integrity**:
    - Perform structural field-by-field JSON/data diffs.
-   - Detect subtle regressions: key casing (camelCase vs snake_case), timestamp formatting (epoch vs ISO 8601), null vs omitted properties, and float precision.
-4. **Latency & Performance Profiling**:
+   - Detect subtle regressions: key casing (`camelCase` vs `snake_case`), timestamp formatting (epoch vs ISO 8601), null vs omitted properties, and float precision.
+
+5. **Latency & Performance Profiling**:
    - Measure execution latency (p50, p99) for both targets.
    - Flag any unexpected performance regressions (>15% slowdown).
 

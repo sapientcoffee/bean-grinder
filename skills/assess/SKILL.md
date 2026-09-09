@@ -63,6 +63,7 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
 
 - **Zero Context Pollution:** Both subagents run in isolated execution sandboxes, keeping raw CLI output, AST details, and intermediate HTML parsing out of the parent conversation context.
 - **Concurrent Execution:** Neither subagent depends on the other. `codmod` is I/O & cloud-API bound; `graphify` is local CPU & AST bound.
+- **Optional Seam & Spec Deep-Scan:** For complex monoliths, invoke `@seam-scout` (to map Michael Feathers' Object/Link/Preprocessor seams and Sprout/Wrap opportunities) and `@spec-recovery-agent` (for business rule recovery under Human-in-the-Loop review).
 
 ---
 
@@ -75,7 +76,7 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
      * `graphify-out/graph.json` (from `@graphify-scout`)
 
 2. **Execute Automated Digestion & Unified Modernization Dashboard:**
-   - Synthesize the dual-lens outputs into vertical slices and the unified modernization dashboard:
+   - Synthesize the dual-lens outputs into vertical slices, 7 Rs portfolio rationalization, Feathers' seams, Transactional Outbox + CDC data architectures, and the unified modernization dashboard:
      ```bash
      python3 scripts/digest_report.py \
        --report modernization_report.html \
@@ -83,9 +84,9 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
        --output-dir plans/<slug>/<timestamp>
      ```
    - This automatically produces:
-     * `plans/<slug>/<timestamp>/modernization_dashboard.html` (Unified multi-tab glass pane)
-     * `plans/<slug>/<timestamp>/migration_matrix.json` (Machine-readable dataset)
-     * `plans/<slug>/<timestamp>/05_PLAN.md` (Dependency-ordered implementation plan)
+     * `plans/<slug>/<timestamp>/modernization_dashboard.html` (Unified multi-tab glass pane including 7 Rs Strategy, Seams, Data CDC, and Mikado Graph)
+     * `plans/<slug>/<timestamp>/migration_matrix.json` (Machine-readable dataset with quantum metrics and CDC cutover phases)
+     * `plans/<slug>/<timestamp>/05_PLAN.md` (Mikado dependency-ordered implementation plan)
      * `00_visual-dashboard.html` (Automatically mirrored to the active conversation brain for instant UI inspection)
 
 ---

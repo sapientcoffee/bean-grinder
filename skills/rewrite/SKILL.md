@@ -73,18 +73,29 @@ An application rewrite leverages the repository's suite of specialized autonomou
    - Mirror these to the system artifacts folder as `01_visual-glossary.html` (Rule 5).
 
 ### Step 4: Target Domain Modeling & Socratic Alignment (Stage 4 - Spec)
-1. **Architect Target Models:** Use the `domain-modeling` skill to design target entity classes, repositories, and services aligned with your modern target runtime's idioms (e.g., adopting Java Records, .NET primary constructors, asynchronous/non-blocking patterns, or lightweight serverless handlers).
-2. **Decouple Business Logic:** Introduce explicit service boundaries or domain services to completely isolate core business rules from Web/HTTP handlers or database persistence classes.
-3. **Draft `04_SPEC.md` & `04_visual-spec.html`:** Document the target system design, data architecture, security hardening (e.g., Secret Manager, identity providers), and SRE/observability integrations. Mirror to system artifacts.
-4. **Conduct Socratic Grill:** Execute the `grill` / `grilling` skill to stress-test your design and ensure all edge cases are answered before writing code.
+1. **Architect Target Models & Architectural Quanta:** Use the `domain-modeling` skill to design target entity classes, repositories, and services aligned with modern target runtime idioms (e.g., Java Records, .NET primary constructors, non-blocking handlers). Calculate architectural quanta by balancing disintegration drivers (agility, elasticity, blast radius) against integration drivers (ACID transactions, saga overhead, latency).
+2. **Strangler Fig & Structural Decoupling:**
+   - **Ingress Interception:** Plan API Gateway, Edge Reverse Proxy, or CDN routing to divert traffic between legacy monolith and target microservices.
+   - **UI Composition:** Select Page Composition (routing URL paths to modern micro-frontends at edge CDN) or Widget Composition (Edge-Side Includes / micro-frontend containers).
+   - **Branch by Abstraction:** For internal capabilities lacking HTTP boundaries, execute across 5 stages: (1) Abstract provider interface, (2) Re-point call sites to abstraction, (3) Alternate out-of-process implementation, (4) Dynamic feature toggle, (5) Decommission legacy implementation.
+3. **Data Modernization & State Integrity Strategy (No Dual-Writes):**
+   - Strictly prohibit application-level dual-writes and heavy 2PC protocols.
+   - Implement the **Transactional Outbox Pattern** coupled with **Log-Based Change Data Capture (CDC)** (e.g. Debezium tailing WAL/binlog to Kafka).
+   - Coordinate cross-boundary transactions using **Sagas** (orchestrated or choreographed) with idempotent handlers and semantic compensating actions.
+   - Execute the 4-phase data cutover: (A) Snapshot + log tailing ➔ (B) Monolith writes authoritative ➔ (C) Modern service writes authoritative with reverse-CDC rollback ➔ (D) Sever synchronization.
+4. **Draft `04_SPEC.md` & `04_visual-spec.html`:** Document the target system design, data architecture, security hardening (Secret Manager, IAM), and SRE/observability integrations. Mirror to system artifacts.
+5. **Conduct Socratic Grill:** Execute the `grill` / `grilling` skill to stress-test your design and ensure all edge cases are answered before writing code.
 
 ### Step 5: Decompose Monolith into Logical Vertical Slices (Stage 5 - Execution Plan)
-1. **Vertical Slicing Rules:** Do NOT plan a monolithic rewrite. Cut the application into logical, independent vertical slices sequenced by dependency order (foundation first, leaf models, core services, central hubs, then ingress controllers).
+1. **The Mikado Method Dependency Graph:**
+   - Define the root architectural modernization goal.
+   - Map prerequisite dependencies and leaf nodes into a directed acyclic graph (DAG).
+   - Enforce the Mikado refactoring rule during execution: if an attempted code change breaks compilation or characterization tests, immediately execute a hard reset (`git reset --hard`), record the blocking cause as a prerequisite child node, and resolve leaf nodes first.
 2. **Draft the Slice-Based Execution Plan (`05_PLAN.md`):**
    - Establish physical contract signatures first.
    - Categorize tasks into `[Serial]` and parallelizable (`[Parallel]`) chunks.
    - Leverage `scripts/digest_report.py` to auto-generate the preliminary `05_PLAN.md` and `migration_matrix.json`.
-   - **Dependency-Ordered Slicing Pattern:**
+   - **Dependency-Ordered Slicing Pattern (Leaf to Root):**
      - **Slice 0 (Common Foundation & Infrastructure):** Target build system configuration (JDK 21, .NET 9), runtime properties, compiler plugins, schema migrations, and CI wrappers.
      - **Slice 1 (Standalone Leaf Modules & Lookup Models):** Low-coupling modules with minimal external dependencies (e.g., lookups, dictionary models, enums). Serves to validate pipeline compilation, data access, and routing.
      - **Slice 2 (Core Domain Repositories & Data Layer):** Main domain services and repositories handling state mutations, validation rules, and heavy transactions. Apply `codmod`'s data layer recommendations (e.g., `javax.*` to `jakarta.*`).
@@ -93,8 +104,21 @@ An application rewrite leverages the repository's suite of specialized autonomou
      - **Slice 5 (Target Cloud Hardening & Observability):** Cloud Run configuration, Cloud SQL pooling, GCP Secret Manager, health probes, and OpenTelemetry exporters.
 3. **Generate Kanban Visuals:** Use the `kanban` skill to generate an interactive board and Mermaid diagram to map slices and track progress. Mirror `05_PLAN.md` to system artifacts.
 
+### Step 5.5: Multi-Persona Adversarial Plan Hardening Loop (Stage 5.5)
+Before presenting `05_PLAN.md` to the user at the Step 6 Human Gate, execute the multi-persona adversarial review loop to stress-test the proposal from opposing perspectives:
+1. **Dispatch Adversarial Reviewers:**
+   - **`@reviewer-exec` (Executive Perspective):** Scrutinizes TCO, cloud run-rate, licensing sunset timelines, and rollback RPO/MTD.
+   - **`@reviewer-engineer` (Engineering Perspective):** Scrutinizes AST safety, reflection breakage, build times, testability, and DX.
+   - **`@reviewer-architect` (Architecture Perspective):** Scrutinizes Central Dependency Hubs (`graphify`), Anti-Corruption Layers, distributed state, and horizontal scaling.
+   - **`@reviewer-pm` (Product Perspective):** Scrutinizes behavioral parity, undocumented legacy quirks, acceptance criteria (Gherkin), and scope drift.
+2. **Arbiter Reconciliation & Convergence:**
+   - Invoke **`@review-arbiter`** or run `python3 scripts/review_loop.py --plan-dir <plan_dir>` to parse reviewer findings, calculate the consensus score ($100 - (25C + 10H + 3M + 1L)$), reconcile contradictory trade-offs, and emit `adversarial_review_matrix.json` and `05_ADVERSARIAL_REVIEW.md`.
+   - **Convergence Gate:** The plan is hardened and ready for human review once Consensus Score $\ge 90.0\%$ and zero Critical/High findings remain.
+   - **Circuit Breaker:** If convergence is not met within 3 rounds, the loop halts and flags the unresolved trade-offs for human arbitration.
+3. **Synchronize Unified Dashboard:** Re-run `scripts/generate_dashboard.py` to activate the "🛡️ Adversarial Review" tab and dual-write artifacts (`05_ADVERSARIAL_REVIEW.md`, `adversarial_review_matrix.json`) to the brain directory.
+
 ### Step 6: Human Gate & Execution (Stages 6 to 9)
-1. **Halt for Approval:** Present the PRD, Spec, and Slice Execution Plan to the user. Require explicit "approve" verification.
+1. **Halt for Approval:** Present the PRD, Spec, Hardened Slice Execution Plan, and Adversarial Review Scorecard to the user. Require explicit "approve" verification.
 2. **Slice-by-Slice Implementation:** Execute using TDD via `/tdd` (silent on success) utilizing the `generate-code` and `audit-code` skills to build and verify each slice.
 3. **Walkthrough Proof:** Capture terminal playbacks or page tests with the `record` command.
 4. **Isolated Branch Delivery:** Build production packages, isolate branch slices using the `worktree` command, and create elegant PRs using `gh` via the `github-workflow` skill.
