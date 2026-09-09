@@ -13,7 +13,7 @@ This skill provides a generic orchestrator that walks through analyzing legacy a
 
 ## 🛠️ Unified Workspace Skills Mapping
 An application rewrite leverages the repository's suite of specialized autonomous barista swarm skills:
-1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to run codebase pre-scans, check active credentials, select `codmod` intents, and execute the remote assessment.
+1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to orchestrate parallel subagents (`@codmod-assessor` and `@graphify-scout`) for concurrent semantic scanning and AST dependency mapping without context bloat.
 2. **Requirements & Discovery (Phase 2):** Use the `feature` / `write-prd` skill to initialize directories, draft `02_PRD.md`, and compile the master `visual-dashboard.html`.
 3. **Parity Extraction (Phase 3):** Use the `research` skill to do blind, factual extraction of legacy models, endpoints, and business rules to build `docs/glossary.md` and `docs/visual-glossary.html`.
 4. **Domain Architecture (Phase 4):** Use the `domain-modeling` skill to define target bounded contexts and architectural decisions.
@@ -30,8 +30,7 @@ An application rewrite leverages the repository's suite of specialized autonomou
 
 ### Step 1: Ingest Assessment Report & Architectural Dependencies (Dual-Lens Engine)
 1. **Locate or Generate Assessment & Dependency Map:**
-   - Look for a pre-generated assessment report (e.g., `modernization_report.html`, `petclinic-standard-report-3.6.html`, or a JSON metadata export). If none exists, run the `assess` skill using `codmod create` to generate one.
-   - Run or locate **Graphify** codebase analysis (`graphify <path> --directed`). If `graphify-out/graph.json` exists, utilize it to map dependencies and subsystem boundaries.
+   - Look for pre-generated assessment artifacts (e.g., `modernization_report.html` and `graphify-out/graph.json`). If none exist, invoke the `assess` skill, which dispatches parallel subagents (`@codmod-assessor` and `@graphify-scout`) to generate both concurrently without context pollution.
    - Run the automated digest tool to cross-reference recommendations with codebase architecture and build the unified dashboard:
      ```bash
      python3 scripts/digest_report.py \

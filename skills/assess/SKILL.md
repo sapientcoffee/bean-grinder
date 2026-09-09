@@ -1,11 +1,11 @@
 ---
 name: assess
-description: Exposes the app modernization assessment skill, performing agentic codebase scans, GCP credential verification, cost estimation checks, and executing the codmod CLI.
+description: Exposes the app modernization assessment skill, performing parallel agentic codebase scans, GCP credential verification, optional cost estimation checks, and coordinating CodMod and Graphify subagents.
 ---
 
-# ☕ Skill: CodMod App Modernization Assessment
+# ☕ Skill: CodMod App Modernization Assessment (Parallel Orchestrator)
 
-You are executing the application modernization assessment workflow. Follow this step-by-step protocol meticulously.
+You are executing the application modernization assessment workflow. Follow this step-by-step orchestrator protocol to run semantic and architectural assessments concurrently via context-isolated subagents.
 
 ---
 
@@ -21,126 +21,65 @@ You are executing the application modernization assessment workflow. Follow this
 
 ---
 
-## 2. Spawn Modernization Scout Subagent
+## 2. Optional Pre-Flight Cost Shield
 
-To perform an intelligent, context-aware pre-scan without relying on rigid scripts, leverage the Antigravity agentic harness:
+> [!NOTE]
+> Cost estimation is kept strictly outside of subagents and is **optional**. Do not run cost estimation unless the user explicitly passes `--estimate-cost` or asks for a dry-run budget estimate upfront.
 
-1. **Invoke the Subagent:**
-   - Spawn a dedicated subagent using the `invoke_subagent` tool:
-     *   **TypeName**: `research`
-     *   **Role**: `Modernization Scout`
-     *   **Prompt**:
-         ```
-         You are the Modernization Scout subagent. Your task is to perform a comprehensive, non-intrusive scan of the codebase directory: {{args}} (or current workspace if omitted).
-         
-         1. Walk the folders and count files by extension.
-         2. Check for legacy Java indicators: Parse pom.xml or build.gradle files to check if the Java source compatibility version is 8 or older (e.g. sourceCompatibility = 1.8).
-         3. Check for WildFly profiles: Look for XML structures like standalone.xml, wildfly-config.xml, or package descriptors with WildFly server references.
-         4. Check for Microsoft workloads: Look for .sln, .csproj, or .vbproj files.
-         5. Check for Arm VM candidates: Look for C/C++ source code targeting legacy VM structures.
-         6. Check for cloud vendor libraries: Scan code for AWS (boto3, aws-sdk) or Azure imports.
-         
-         Return a structured findings list summarizing: file counts, Java source versions, detected application servers, cloud libraries, and overall codebase lines of code (LOC).
-         ```
-2. **Retrieve & Parse findings:**
-   - Wait for the Scout subagent to report its findings, then extract its summarized metrics.
-
----
-
-## 3. Map Findings to CodMod Intents
-
-Based on the Scout subagent's findings, compute the optimal arguments for the CLI execution:
-
-1. **Select Intent Flag (`--intent`):**
-   - If WildFly configurations or profiles are detected: `--intent WILDFLY_LEGACY_TO_MODERN`
-   - Else if Java source compatibility <= 8 is detected: `--intent JAVA_LEGACY_TO_MODERN`
-   - Else if Microsoft solution/project files are detected: `--intent MICROSOFT_MODERNIZATION`
-   - Else if C/C++ source code targeting legacy environments is detected: `--intent ARM_MIGRATION`
-   - Else if AWS or Azure vendor libraries are detected: `--intent CLOUD_TO_CLOUD`
-   - Default fallback: If no clear matches exist, print a message informing the user and ask for their target intent choice.
-
-2. **Select Optional Sections (`--optional-sections`):**
-   - If Java or C# is detected, set `--optional-sections classes,files`.
-   - Otherwise, default to `--optional-sections files`.
-
----
-
-## 4. Model Set & Region Workaround Routing
-
-To leverage the latest Gemini 3.x capabilities while avoiding Vertex AI regional 404 errors, apply this custom model fallback:
-
-1. **Parse Arguments & Detect Target Class:**
-   - Scan the input string or `{{args}}` for flags specifying model tier overrides (e.g. `--pro`, `pro`, `--modelset=pro`, `--modelset=gemini-3.1-pro`):
-   - **If "pro" is requested:**
-     *   Set CLI Parameter: `--modelset=gemini-3.1-pro`
-     *   Set Region: `--region=global` (Ensure global region is used to avoid regional availability limitations)
-   - **Default (If no "pro" overrides are specified):**
-     *   Set CLI Parameter: `--modelset=gemini-3.6-flash`
-     *   Set Region: `--region=global` (Enforces 3.6 flash routing inside the global Vertex AI region)
-
-2. **Console Warning:**
-   - Display a warning advising the user that custom model fallbacks are active:
-     ```
-     ⚠️ WARNING: Custom modelset active. The system will attempt to interpret this as a Gemini model name.
-     - Model: <selected-modelset>
-     - Region: global
-     ```
-
----
-
-## 5. Interactive Cost Shield
-
-1. **Calculate Estimates:**
+1. **If `--estimate-cost` is explicitly requested:**
    - Run the cost-estimation dry-run using Vertex AI Gemini pricing parameters:
      ```bash
      codmod create --estimate-cost --intent <intent> --optional-sections <optional-sections> --modelset <computed-modelset> --region global
      ```
-2. **Gate Budgets:**
    - Print the calculated bill and codebase file count to the terminal.
-   - If the codebase size exceeds 100,000 LOC or the estimated cost is substantial, halt execution and prompt the user for explicit confirmation (`y/N`) before launching the remote API.
-   - If the user selects "No" or rejects, terminate gracefully, displaying the exact CLI command that would have run.
+   - If the codebase size exceeds 100,000 LOC or the estimated cost is substantial, halt execution and prompt the user for explicit confirmation (`y/N`) before proceeding.
+2. **Default (No cost flag requested):**
+   - Skip directly to Section 3.
 
 ---
 
-## 6. Execute Google Cloud CodMod Assessment
+## 3. Dispatch Parallel Assessment Subagents
 
-1. **Trigger Assessment:**
-   - Run the main assessment command with computed parameters:
-     ```bash
-     codmod create --intent <intent> --optional-sections <optional-sections> --modelset <computed-modelset> --region global -o modernization_report.html
-     ```
-   - Ensure the command execution uses safe argument lists (`shell=False` equivalents) to shield the CLI from injection.
+To maximize context hygiene and cut discovery execution time in half, dispatch **both** specialized subagents concurrently in a single `invoke_subagent` tool call:
 
-2. **Trap Failures (Self-Healing Log Collection):**
-   - If the `codmod create` command fails or returns a non-zero exit code:
-     *   Trigger the diagnostic collection tool:
-         ```bash
-         codmod collect-logs -o plans/feature/20260731-codmod-assessment/codmod_logs.zip
-         ```
-     *   Inform the developer of the failure and point them to the diagnostic zip path.
+```json
+{
+  "Subagents": [
+    {
+      "TypeName": "codmod-assessor",
+      "Role": "CodMod Assessor",
+      "Prompt": "You are the CodMod Assessor subagent. Execute the Google Cloud codmod modernization assessment on codebase directory: {{target_dir}} (or current workspace).\n1. Inspect the codebase to detect frameworks and select optimal --intent and --optional-sections.\n2. Apply modelset routing (default --modelset=gemini-3.6-flash --region=global, or --modelset=gemini-3.1-pro if pro is requested).\n3. Execute 'codmod create' non-interactively to generate modernization_report.html. Trap any failures with 'codmod collect-logs'.\n4. Extract key findings, LOC scale, top modernization blockers, and report path, returning a concise structured summary.",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "graphify-scout",
+      "Role": "Graphify Scout",
+      "Prompt": "You are the Graphify Scout subagent. Perform an architectural dependency and AST scan on codebase directory: {{target_dir}} (or current workspace).\n1. Run 'graphify . --directed' to construct the topological knowledge graph.\n2. Verify the generation of graphify-out/graph.json, graphify-out/graph.html, and graphify-out/GRAPH_REPORT.md.\n3. Parse the graph to extract total nodes, total edges, component module count, and top central dependency hubs (high blast radius).\n4. Return a concise structured summary with artifact paths.",
+      "Model": "flash"
+    }
+  ]
+}
+```
+
+- **Zero Context Pollution:** Both subagents run in isolated execution sandboxes, keeping raw CLI output, AST details, and intermediate HTML parsing out of the parent conversation context.
+- **Concurrent Execution:** Neither subagent depends on the other. `codmod` is I/O & cloud-API bound; `graphify` is local CPU & AST bound.
 
 ---
 
-## 6b. Architectural Dependency Scan via Graphify (Recommended)
+## 4. Ingest Subagent Findings & Automated Digestion
 
-1. **Map Codebase Architecture & Dependencies:**
-   - To complement the semantic assessment with concrete code relationships, run **Graphify** on the target repository:
-     ```bash
-     graphify . --directed
-     ```
-   - This generates `graphify-out/graph.json`, `graphify-out/graph.html`, and `graphify-out/GRAPH_REPORT.md` detecting:
-     *   **Component Modules:** Natural domain clusters and functional subsystems (e.g., Repositories, Domain Models, Web Controllers).
-     *   **Central Dependency Hubs:** Core classes with the highest number of callers and dependencies, representing high blast radius.
-     *   **Hidden Coupling:** Unexpected cross-subsystem dependencies that bridge across layer boundaries.
+1. **Receive Concise Subagent Returns:**
+   - Wait for both subagents to report completion.
+   - Confirm both deliverables exist:
+     * `modernization_report.html` (from `@codmod-assessor`)
+     * `graphify-out/graph.json` (from `@graphify-scout`)
 
-2. **Automated Digestion & Unified Modernization Dashboard:**
-   - The emitted `modernization_report.html` and `graphify-out/` are digested to synthesize dependency-ordered vertical slices and a single, unified modernization dashboard:
+2. **Execute Automated Digestion & Unified Modernization Dashboard:**
+   - Synthesize the dual-lens outputs into vertical slices and the unified modernization dashboard:
      ```bash
      python3 scripts/digest_report.py \
        --report modernization_report.html \
        --graph graphify-out/graph.json \
-       --graph-html graphify-out/graph.html \
-       --graph-report graphify-out/GRAPH_REPORT.md \
        --output-dir plans/<slug>/<timestamp>
      ```
    - This automatically produces:
@@ -151,16 +90,15 @@ To leverage the latest Gemini 3.x capabilities while avoiding Vertex AI regional
 
 ---
 
-## 7. Report Mirroring & Telemetry
+## 5. Report Mirroring & Telemetry
 
 1. **Artifact Mirroring (Rule 5 compliance):**
-   - The dashboard is automatically mirrored to `<appDataDir>/brain/<conversation-id>/00_visual-dashboard.html` by `digest_report.py`.
-   - If manual mirroring of the raw assessment report is required, copy `modernization_report.html` into your active chat session's system artifacts directory as `08_visual-recap.html` (e.g. copying to `<appDataDir>/brain/<conversation-id>/08_visual-recap.html`).
-   - Include valid `ArtifactMetadata` so that the interactive HTML opens directly inside the side-panel chat panel.
+   - The unified dashboard is automatically mirrored to `<appDataDir>/brain/<conversation-id>/00_visual-dashboard.html` by `digest_report.py`.
+   - If manual mirroring of the raw assessment report is required, copy `modernization_report.html` into your active chat session's system artifacts directory as `08_visual-recap.html`.
 
 2. **Write Telemetry Logs:**
    - Append a single structured JSON line containing execution metadata to:
-     `plans/feature/20260731-codmod-assessment/codmod_telemetry.log`
+     `plans/feature/<timestamp>/codmod_telemetry.log`
    - Ensure the log object conforms to the defined schema:
      ```json
      {
@@ -172,7 +110,9 @@ To leverage the latest Gemini 3.x capabilities while avoiding Vertex AI regional
        "sections": ["<sections>"],
        "modelset": "<computed-modelset>",
        "status": "success",
-       "estimated_cost_usd": <cost>,
        "duration_ms": <duration>
      }
      ```
+
+3. **Present Scorecard:**
+   - Present the Executive Scorecard, Central Dependency Hubs table, and planned vertical slices from `05_PLAN.md` to the user, highlighting the link to `modernization_dashboard.html` / `00_visual-dashboard.html`.
