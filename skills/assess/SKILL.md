@@ -17,7 +17,7 @@ flowchart TD
     CostCalc --> ConfirmGate{"> 100k LOC or High Bill?<br/>Prompt User Confirmation (y/N)"}
     ConfirmGate -->|Cancelled| Abort["Abort Execution"]
     ConfirmGate -->|Confirmed| SubagentsDispatch
-    CostShieldCheck -->|No (Default)| SubagentsDispatch
+    CostShieldCheck -->|"No (Default)"| SubagentsDispatch
     
     subgraph SubagentsDispatch["Concurrent Subagent Dispatch (invoke_subagent)"]
         direction TB
