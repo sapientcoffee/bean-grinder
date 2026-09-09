@@ -1,0 +1,10 @@
+{
+  "name": "bean-grinder",
+  "version": "1.0.0",
+  "description": "Code Modernization, AST Transformations, and Migration Forge: Powers codmod assessments, parity rewrites, and framework upgrades.",
+  "author": {
+    "name": "sapientcoffee"
+  },
+  "repository": "https://github.com/sapientcoffee/bean-grinder",
+  "license": "Apache-2.0"
+}
