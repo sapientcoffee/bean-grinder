@@ -1,6 +1,6 @@
 ---
 name: rewrite
-description: Stage 1/2 - Orchestrate a legacy application rewrite workflow by analyzing modernization assessments and coordinating specialized skills.
+description: Orchestrates an end-to-end legacy application rewrite and cloud modernization workflow across discovery, parity extraction, domain modeling, vertical slicing, and adversarial review. Use this skill when the user asks to plan, orchestrate, or execute a comprehensive application rewrite, legacy migration, or full modernization lifecycle from discovery through PR delivery.
 ---
 
 # ☕ Skill: Application Rewrite Brew Protocol
@@ -13,7 +13,7 @@ This skill provides a generic orchestrator that walks through analyzing legacy a
 
 ## 🛠️ Unified Workspace Skills Mapping
 An application rewrite leverages the repository's suite of specialized autonomous barista swarm skills:
-1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to orchestrate parallel subagents (`@codmod-assessor` and `@graphify-scout`) for concurrent semantic scanning and AST dependency mapping without context bloat.
+1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to orchestrate parallel subagents (`@codmod-assessor`, `@graphify-scout`, `@seam-scout`, `@spec-recovery-agent`, and `@migration-scout`) for concurrent semantic scanning, AST dependency mapping, and seam discovery without context bloat.
 2. **Requirements & Discovery (Phase 2):** Use the `feature` / `write-prd` skill to initialize directories, draft `02_PRD.md`, and compile the master `visual-dashboard.html`.
 3. **Parity Extraction (Phase 3):** Use the `research` skill to do blind, factual extraction of legacy models, endpoints, and business rules to build `docs/glossary.md` and `docs/visual-glossary.html`.
 4. **Domain Architecture (Phase 4):** Use the `domain-modeling` skill to define target bounded contexts and architectural decisions.
@@ -31,7 +31,7 @@ An application rewrite leverages the repository's suite of specialized autonomou
 ```mermaid
 flowchart TD
     subgraph P1["Phase 1: Ingestion & Dual-Lens Digestion"]
-        Assess["assess skill<br/>(@codmod-assessor & @graphify-scout)"] --> Reports["modernization_report.html & graphify-out/"]
+        Assess["assess skill<br/>(@codmod-assessor, @graphify-scout & scouts)"] --> Reports["modernization_report.html & graphify-out/"]
         Reports --> Digest["scripts/digest_report.py & generate_dashboard.py"]
         Digest --> BasePlan["05_PLAN.md, migration_matrix.json, modernization_dashboard.html"]
     end
@@ -74,7 +74,7 @@ flowchart TD
 
 ### Step 1: Ingest Assessment Report & Architectural Dependencies (Dual-Lens Engine)
 1. **Locate or Generate Assessment & Dependency Map:**
-   - Look for pre-generated assessment artifacts (e.g., `modernization_report.html` and `graphify-out/graph.json`). If none exist, invoke the `assess` skill, which dispatches parallel subagents (`@codmod-assessor` and `@graphify-scout`) to generate both concurrently without context pollution.
+   - Look for pre-generated assessment artifacts (e.g., `modernization_report.html` and `graphify-out/graph.json`). If none exist, invoke the `assess` skill, which dispatches parallel subagents (`@codmod-assessor`, `@graphify-scout`, `@seam-scout`, `@spec-recovery-agent`, and `@migration-scout`) to generate discovery artifacts concurrently without context pollution.
    - Run the automated digest tool to cross-reference recommendations with codebase architecture and build the unified dashboard:
      ```bash
      python3 scripts/digest_report.py \

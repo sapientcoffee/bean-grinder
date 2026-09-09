@@ -94,7 +94,7 @@ Navigate to your target legacy repository and start an Antigravity CLI session. 
 cd /path/to/legacy-monolith
 
 # Interactive mode with slash command:
-agy -i "/assess --estimate-cost"
+agy -i "/assess"
 
 # Or launch the interactive prompt directly:
 agy
@@ -102,13 +102,12 @@ agy
 
 When inside the interactive session, invoke the assessment skill:
 ```text
-> /assess --estimate-cost
+> /assess
 ```
 
 ### What Happens Behind the Scenes:
 1. **GCP Credential Guard**: Verifies active GCP authentication tokens before invoking remote services.
-2. **Pre-Flight Cost Shield (`--estimate-cost`)**: Analyzes total lines of code (LOC) and projects token usage. For large codebases (>100k LOC), prompts for confirmation before proceeding.
-3. **Concurrent Subagent Dispatch**: AGY CLI launches two context-isolated subagents in parallel to prevent context pollution:
+2. **Concurrent Subagent Dispatch**: AGY CLI launches two context-isolated subagents in parallel to prevent context pollution:
    - **`@codmod-assessor`**: Executes Google Cloud `codmod create`, mapping frameworks, analyzing deprecated APIs, and generating `modernization_report.html`.
    - **`@graphify-scout`**: Executes `graphify . --directed` to extract topological AST call graphs, central dependency hubs, and component clusters.
 
@@ -348,7 +347,7 @@ To replace the SVG mockups with real screenshots from your own environment:
 
 | Intent | Command / Action |
 | :--- | :--- |
-| **Interactive Assessment** | `agy -i "/assess --estimate-cost"` |
+| **Interactive Assessment** | `agy -i "/assess"` |
 | **Non-Interactive Assessment** | `agy -p "/assess"` |
 | **Adversarial Review** | `agy -i "/adversarial-review --plan plans/.../05_PLAN.md"` |
 | **Synthesize Digest** | `python3 scripts/digest_report.py --report <path> --graph <path> --output-dir <dir>` |

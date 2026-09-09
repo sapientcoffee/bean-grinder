@@ -1,6 +1,6 @@
 ---
 name: assess
-description: Exposes the app modernization assessment skill, performing parallel agentic codebase scans, GCP credential verification, optional cost estimation checks, and coordinating CodMod and Graphify subagents.
+description: Exposes the app modernization assessment skill, performing parallel agentic codebase scans, GCP credential verification, and coordinating CodMod, Graphify, Seam, Spec Recovery, and Migration subagents. Use this skill when the user asks to assess, scan, or analyze an application codebase for modernization, cloud migration, architectural technical debt, or when executing the assessment discovery phase.
 ---
 
 # ☕ Skill: CodMod App Modernization Assessment (Parallel Orchestrator)
@@ -11,29 +11,30 @@ You are executing the application modernization assessment workflow. Follow this
 flowchart TD
     Start["Assess Command / Target Workspace"] --> GCPGuard{"GCP Credential Guard<br/>(gcloud auth print-access-token)"}
     GCPGuard -->|Missing Credentials| HaltGuide["Halt & Prompt Resolution Guide"]
-    GCPGuard -->|Valid Credentials| CostShieldCheck{"--estimate-cost<br/>flag passed?"}
-    
-    CostShieldCheck -->|Yes| CostCalc["Run codmod create --estimate-cost<br/>Calculate Bill & Token Projections"]
-    CostCalc --> ConfirmGate{"> 100k LOC or High Bill?<br/>Prompt User Confirmation (y/N)"}
-    ConfirmGate -->|Cancelled| Abort["Abort Execution"]
-    ConfirmGate -->|Confirmed| SubagentsDispatch
-    CostShieldCheck -->|"No (Default)"| SubagentsDispatch
+    GCPGuard -->|Valid Credentials| SubagentsDispatch
     
     subgraph SubagentsDispatch["Concurrent Subagent Dispatch (invoke_subagent)"]
         direction TB
-        subgraph Sub1["@codmod-assessor"]
+        subgraph S1["@codmod-assessor (TypeName: self)"]
             C1["Detect Stacks & Map Intent"] --> C2["codmod create --intent ..."]
             C2 -->|Fail| C3["codmod collect-logs -o codmod_logs.zip"]
             C2 -->|Success| C4["Extract Modernization Blockers"]
         end
-        subgraph Sub2["@graphify-scout"]
+        subgraph S2["@graphify-scout (TypeName: self)"]
             G1["graphify . --directed"] --> G2["Extract Central Dependency Hubs"]
             G2 --> G3["Generate graphify-out/ artifacts"]
         end
-        subgraph Sub3["Optional Deep-Scan Scouts"]
-            S1["@seam-scout: Feathers' Seams"]
-            S2["@spec-recovery-agent: Rules & [AMBIGUOUS_SPEC]"]
-            S3["@migration-scout: EOL & 7 Rs Matrix"]
+        subgraph S3["@seam-scout (TypeName: research)"]
+            SE1["Feathers' Seams: Object, Link, Preprocessor"]
+            SE2["Identify Sprout & Wrap Refactoring Points"]
+        end
+        subgraph S4["@spec-recovery-agent (TypeName: research)"]
+            SR1["Business Rules & Invariants"]
+            SR2["Flag [AMBIGUOUS_SPEC] Items"]
+        end
+        subgraph S5["@migration-scout (TypeName: research)"]
+            M1["7 Rs Portfolio Rationalization Matrix"]
+            M2["Framework EOL & Cloud Migration Path"]
         end
     end
     
@@ -56,59 +57,70 @@ flowchart TD
 
 ---
 
-## 2. Optional Pre-Flight Cost Shield
+## 2. Dispatch Parallel Assessment Subagents
 
-> [!NOTE]
-> Cost estimation is kept strictly outside of subagents and is **optional**. Do not run cost estimation unless the user explicitly passes `--estimate-cost` or asks for a dry-run budget estimate upfront.
+> [!IMPORTANT]
+> **Antigravity CLI / 2.0 Subagent Architecture Rule:**
+> In the Antigravity runtime, `invoke_subagent` accepts built-in subagent types:
+> - **`"self"`**: Inherits the parent agent's configuration and tools (including `run_command` and file editing). **MUST be used for subagents executing CLI commands** (such as `@codmod-assessor` and `@graphify-scout`).
+> - **`"research"`**: Context-isolated read-only exploration agent equipped with `view_file`, `grep_search`, `find_by_name`, and `list_dir`. **MUST be used for read-only scouts** (such as `@seam-scout`, `@spec-recovery-agent`, and `@migration-scout`).
+> *(Note: Custom agent type names can only be passed if they were pre-registered during the conversation with `define_subagent`.)*
 
-1. **If `--estimate-cost` is explicitly requested:**
-   - Run the cost-estimation dry-run using Vertex AI Gemini pricing parameters:
-     ```bash
-     codmod create --estimate-cost --intent <intent> --optional-sections <optional-sections> --modelset <computed-modelset> --region global
-     ```
-   - Print the calculated bill and codebase file count to the terminal.
-   - If the codebase size exceeds 100,000 LOC or the estimated cost is substantial, halt execution and prompt the user for explicit confirmation (`y/N`) before proceeding.
-2. **Default (No cost flag requested):**
-   - Skip directly to Section 3.
-
----
-
-## 3. Dispatch Parallel Assessment Subagents
-
-To maximize context hygiene and cut discovery execution time in half, dispatch **both** specialized subagents concurrently in a single `invoke_subagent` tool call:
+To maximize context hygiene and cut discovery execution time to a single concurrent turn, dispatch **all five** specialized subagents in a single `invoke_subagent` tool call:
 
 ```json
 {
   "Subagents": [
     {
-      "TypeName": "codmod-assessor",
+      "TypeName": "self",
       "Role": "CodMod Assessor",
-      "Prompt": "You are the CodMod Assessor subagent. Execute the Google Cloud codmod modernization assessment on codebase directory: {{target_dir}} (or current workspace).\n1. Inspect the codebase to detect frameworks and select optimal --intent and --optional-sections.\n2. Apply modelset routing (default --modelset=gemini-3.6-flash --region=global, or --modelset=gemini-3.1-pro if pro is requested).\n3. Execute 'codmod create' non-interactively to generate modernization_report.html. Trap any failures with 'codmod collect-logs'.\n4. Extract key findings, LOC scale, top modernization blockers, and report path, returning a concise structured summary.",
+      "Prompt": "You are the CodMod Assessor subagent (@codmod-assessor). Execute the Google Cloud codmod modernization assessment on codebase directory: {{target_dir}} (or current workspace).\n1. Inspect the codebase to detect frameworks and select optimal --intent and --optional-sections.\n2. Apply modelset routing (default --modelset=gemini-3.8-flash --region=global for Gemini 3.8 Flash (High), or --modelset=gemini-3.1-pro if pro is requested).\n3. Execute 'codmod create' non-interactively to generate modernization_report.html. Trap any failures with 'codmod collect-logs'.\n4. Extract key findings, LOC scale, top modernization blockers, and report path, returning a concise structured summary.",
       "Model": "flash"
     },
     {
-      "TypeName": "graphify-scout",
+      "TypeName": "self",
       "Role": "Graphify Scout",
-      "Prompt": "You are the Graphify Scout subagent. Perform an architectural dependency and AST scan on codebase directory: {{target_dir}} (or current workspace).\n1. Run 'graphify . --directed' to construct the topological knowledge graph.\n2. Verify the generation of graphify-out/graph.json, graphify-out/graph.html, and graphify-out/GRAPH_REPORT.md.\n3. Parse the graph to extract total nodes, total edges, component module count, and top central dependency hubs (high blast radius).\n4. Return a concise structured summary with artifact paths.",
+      "Prompt": "You are the Graphify Scout subagent (@graphify-scout). Perform an architectural dependency and AST scan on codebase directory: {{target_dir}} (or current workspace).\n1. Run 'graphify . --directed' to construct the topological knowledge graph.\n2. Verify the generation of graphify-out/graph.json, graphify-out/graph.html, and graphify-out/GRAPH_REPORT.md.\n3. Parse the graph to extract total nodes, total edges, component module count, and top central dependency hubs (high blast radius).\n4. Return a concise structured summary with artifact paths.",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Seam Scout",
+      "Prompt": "You are the Seam Scout subagent (@seam-scout). Conduct a non-destructive AST and structural exploration on codebase directory: {{target_dir}} (or current workspace).\n1. Identify Michael Feathers' legacy seam opportunities: Object Seams (polymorphic overrides), Link Seams (classpath / build injection), and Preprocessor Seams.\n2. Identify candidates for Sprout Method, Sprout Class, Wrap Method, and Wrap Class.\n3. Identify high-blast-radius coupling bottlenecks and propose Branch by Abstraction boundaries.\n4. Return a structured Markdown table of discovered seams, target files, recommended decoupling patterns, and risk ratings.",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Spec Recovery Scout",
+      "Prompt": "You are the Specification Recovery Scout subagent (@spec-recovery-agent). Conduct code archaeology on codebase directory: {{target_dir}} (or current workspace).\n1. Extract hidden business rules, validation logic, entity lifecycle states, and implicit invariants embedded in legacy source code.\n2. Identify and flag any ambiguous, contradictory, or undocumented behaviors using the explicit marker [AMBIGUOUS_SPEC: <description>].\n3. Compile a structured inventory of domain concepts and business rules with file:line citations for Human-in-the-Loop review.",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Migration Scout",
+      "Prompt": "You are the Migration Scout subagent (@migration-scout). Perform an architectural and portfolio rationalization audit on codebase directory: {{target_dir}} (or current workspace).\n1. Scan all configuration files (pom.xml, build.gradle, *.csproj, package.json, etc.) and identify end-of-life (EOL) frameworks, runtime engines, and third-party libraries.\n2. Map every major subsystem into the Gartner/AWS 7 Rs modernization taxonomy: Retire, Retain, Rehost, Relocate, Repurchase, Replatform, Refactor/Re-architect.\n3. Outline the target Google Cloud compute (Cloud Run, GKE) and data tiers (Cloud SQL, Spanner, Firestore).\n4. Return a structured 7 Rs classification matrix and migration risk summary.",
       "Model": "flash"
     }
   ]
 }
 ```
 
-- **Zero Context Pollution:** Both subagents run in isolated execution sandboxes, keeping raw CLI output, AST details, and intermediate HTML parsing out of the parent conversation context.
-- **Concurrent Execution:** Neither subagent depends on the other. `codmod` is I/O & cloud-API bound; `graphify` is local CPU & AST bound.
-- **Optional Seam & Spec Deep-Scan:** For complex monoliths, invoke `@seam-scout` (to map Michael Feathers' Object/Link/Preprocessor seams and Sprout/Wrap opportunities) and `@spec-recovery-agent` (for business rule recovery under Human-in-the-Loop review).
+- **Zero Context Pollution:** All subagents run in isolated execution sandboxes, keeping raw CLI output, AST details, and intermediate HTML parsing out of the parent conversation context.
+- **True Concurrent Execution:** All five subagents execute in parallel in the background without blocking each other.
+- **Reactive Notification:** The orchestrator stops calling tools and lets the Antigravity reactive wakeup resume execution as subagents complete.
 
 ---
 
-## 4. Ingest Subagent Findings & Automated Digestion
+## 3. Ingest Subagent Findings & Automated Digestion
 
 1. **Receive Concise Subagent Returns:**
-   - Wait for both subagents to report completion.
-   - Confirm both deliverables exist:
+   - Wait for all subagents to report completion.
+   - Confirm key deliverables exist:
      * `modernization_report.html` (from `@codmod-assessor`)
      * `graphify-out/graph.json` (from `@graphify-scout`)
+     * Seam audit findings (from `@seam-scout`)
+     * Business rules and `[AMBIGUOUS_SPEC]` log (from `@spec-recovery-agent`)
+     * 7 Rs rationalization matrix (from `@migration-scout`)
 
 2. **Execute Automated Digestion & Unified Modernization Dashboard:**
    - Synthesize the dual-lens outputs into vertical slices, 7 Rs portfolio rationalization, Feathers' seams, Transactional Outbox + CDC data architectures, and the unified modernization dashboard:
@@ -138,7 +150,7 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
 
 ---
 
-## 5. Report Mirroring & Telemetry
+## 4. Report Mirroring & Telemetry
 
 1. **Artifact Mirroring (Rule 5 compliance):**
    - The unified dashboard is automatically mirrored to `<appDataDir>/brain/<conversation-id>/00_visual-dashboard.html` by `digest_report.py`.

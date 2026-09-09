@@ -335,7 +335,7 @@ flowchart TD
 
 | Skill | Namespace | Purpose |
 | :--- | :--- | :--- |
-| **`assess`** | `skills/assess/` | Parallel orchestrator validating GCP credentials, pre-flight cost estimation shield, and concurrently dispatching discovery subagents. |
+| **`assess`** | `skills/assess/` | Parallel orchestrator validating GCP credentials and concurrently dispatching discovery subagents. |
 | **`rewrite`** | `skills/rewrite/` | Application rewrite protocol: ingests assessment reports, digests semantic findings, maps runtimes, and cuts vertical slices into `05_PLAN.md`. |
 | **`adversarial-review`**| `skills/adversarial-review/` | Multi-persona adversarial review & hardening loop: orchestrates reviewer swarm to iterate on `05_PLAN.md` until consensus. |
 
@@ -386,7 +386,7 @@ The interactive dashboard provides a responsive, single-pane-of-glass interface 
 ### 1. Run Complete Non-Invasive Assessment
 ```bash
 # In your target legacy repository:
-agy run assess --estimate-cost
+agy run assess
 ```
 
 ### 2. Synthesize Reports into Unified Stage Directory & Dashboard
