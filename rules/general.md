@@ -9,3 +9,15 @@ Welcome to **Bean-Grinder**, the automated code modernization and migration engi
 * **Cost Shield:** Always perform a dry-run cost estimation via `codmod create --estimate-cost` before analyzing large codebases (>100k LOC).
 * **Safe Subprocesses:** Execute CLI commands with `shell=False` equivalent argument lists to prevent shell injection.
 
+## 2. Multi-Persona Adversarial Review Protocol
+* **Mandatory Plan Hardening:** Before submitting any modernization plan (`05_PLAN.md`) to the user at the Stage 6 Human Gate, the plan MUST undergo the multi-persona adversarial review loop.
+* **Opposing Persona Perspectives:**
+  - `@reviewer-exec`: Audits TCO, cloud run-rate, licensing sunset timelines, and rollback RPO/MTD.
+  - `@reviewer-engineer`: Audits AST transformation safety, dynamic reflection traps, build speeds, contract testing, and developer experience.
+  - `@reviewer-architect`: Audits Central Dependency Hubs (`graphify`), Anti-Corruption Layers (ACLs), distributed state, and horizontal scalability.
+  - `@reviewer-pm`: Audits behavioral parity, undocumented legacy quirks, acceptance criteria (Gherkin), and scope boundaries.
+* **Arbiter Reconciliation & Convergence:**
+  - `@review-arbiter` reconciles cross-functional trade-offs, computes consensus scores ($100 - (25C + 10H + 3M + 1L)$), and generates plan patch directives.
+  - Convergence is achieved ONLY when consensus score $\ge 90.0\%$ and zero Critical or High severity blockers remain.
+  - If consensus is not reached within 3 rounds, the circuit breaker trips, freezing the plan and documenting the deadlock for human decision-making.
+
