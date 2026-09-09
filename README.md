@@ -13,6 +13,8 @@
 
 > **Autonomous Code Modernization, AST Transformation, and Legacy Migration Forge for Antigravity SDLC pipelines.**
 
+> 📖 **New to Bean-Grinder?** Check out the comprehensive [**Step-by-Step AGY CLI Workflow Guide**](docs/AGY_CLI_WORKFLOW.md) with visual walkthroughs, terminal mockups, and command cheat sheets.
+
 ---
 
 ## ☕ Why "The Grinder"? (The Metaphor Explained)
@@ -378,6 +380,8 @@ The interactive dashboard provides a responsive, single-pane-of-glass interface 
 ---
 
 ## 💻 CLI Usage Guide
+
+> 📘 **Detailed Step-by-Step Instructions**: For an in-depth walkthrough with terminal mockups, subagent interactions, 11-tab dashboard navigation, and GIF recording instructions, see the [**AGY CLI Workflow Guide**](docs/AGY_CLI_WORKFLOW.md).
 
 ### 1. Run Complete Non-Invasive Assessment
 ```bash

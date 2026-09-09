@@ -15,5 +15,7 @@ cp -r "${SCRIPT_DIR}/skills" "${TARGET_DIR}/"
 cp -r "${SCRIPT_DIR}/scripts" "${TARGET_DIR}/" 2>/dev/null || true
 cp -r "${SCRIPT_DIR}/agents" "${TARGET_DIR}/" 2>/dev/null || true
 cp -r "${SCRIPT_DIR}/rules" "${TARGET_DIR}/" 2>/dev/null || true
+cp -r "${SCRIPT_DIR}/docs" "${TARGET_DIR}/" 2>/dev/null || true
+cp -r "${SCRIPT_DIR}/assets" "${TARGET_DIR}/" 2>/dev/null || true
 
 echo "✅ bean-grinder installed successfully to ${TARGET_DIR}."

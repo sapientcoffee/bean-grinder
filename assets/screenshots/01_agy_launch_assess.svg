@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#181825"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Window Container -->
+  <rect x="15" y="15" width="870" height="390" rx="12" fill="url(#bg-grad)" stroke="#313244" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Titlebar -->
+  <path d="M 15 27 A 12 12 0 0 1 27 15 L 873 15 A 12 12 0 0 1 885 27 L 885 52 L 15 52 Z" fill="#181825"/>
+  <circle cx="38" cy="34" r="6.5" fill="#f38ba8"/>
+  <circle cx="58" cy="34" r="6.5" fill="#f9e2af"/>
+  <circle cx="78" cy="34" r="6.5" fill="#a6e3a1"/>
+  <text x="450" y="38" text-anchor="middle" fill="#a6adc8" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="500">Antigravity CLI (agy) — bean-grinder assessment</text>
+
+  <!-- Terminal Content -->
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="13">
+    <!-- Command input -->
+    <text x="35" y="86" fill="#89b4fa" font-weight="bold">robedwards@workstation</text>
+    <text x="210" y="86" fill="#6c7086">:</text>
+    <text x="220" y="86" fill="#a6e3a1" font-weight="bold">~/legacy-monolith</text>
+    <text x="365" y="86" fill="#cdd6f4">$ agy -i &quot;/assess --estimate-cost&quot;</text>
+
+    <!-- Session Banner -->
+    <text x="35" y="122" fill="#cba6f7" font-weight="bold">⚙️  Antigravity 2.0 CLI (agy)</text>
+    <text x="250" y="122" fill="#6c7086">|</text>
+    <text x="265" y="122" fill="#f9e2af">Session: 8f4c-modernize-monolith</text>
+    <text x="560" y="122" fill="#6c7086">|</text>
+    <text x="575" y="122" fill="#89dceb">Plugin: bean-grinder v1.0.0</text>
+
+    <!-- Pre-flight checks -->
+    <text x="35" y="158" fill="#a6adc8">───────────────────────────────────────────────────────────────────────────────────────────</text>
+    
+    <text x="35" y="184" fill="#a6e3a1">✔ [GCP Guard]</text>
+    <text x="160" y="184" fill="#cdd6f4">gcloud auth print-access-token</text>
+    <text x="440" y="184" fill="#6c7086">➔</text>
+    <text x="460" y="184" fill="#a6e3a1">Active (Project: sapient-modernize-prod)</text>
+
+    <text x="35" y="214" fill="#f9e2af">✔ [Cost Shield]</text>
+    <text x="160" y="214" fill="#cdd6f4">Pre-flight estimation:</text>
+    <text x="340" y="214" fill="#89dceb">142 source files (48,210 LOC)</text>
+    <text x="35" y="238" fill="#6c7086">                • Token projection: ~420,000 tokens</text>
+    <text x="35" y="258" fill="#6c7086">                • Estimated CodMod run cost: $0.14 USD (Threshold: &lt; $5.00 OK)</text>
+
+    <!-- Concurrent Subagent Dispatch -->
+    <text x="35" y="294" fill="#cba6f7">⚡ [Orchestrator]</text>
+    <text x="160" y="294" fill="#cdd6f4">Concurrently dispatching context-isolated subagents:</text>
+
+    <text x="55" y="324" fill="#89b4fa">▶ @codmod-assessor</text>
+    <text x="230" y="324" fill="#6c7086">Running Google Cloud codmod create (Model: gemini-3.6-flash)...</text>
+    <text x="760" y="324" fill="#f9e2af">[RUNNING]</text>
+
+    <text x="55" y="350" fill="#94e2d5">▶ @graphify-scout</text>
+    <text x="230" y="350" fill="#6c7086">Running graphify . --directed AST extraction...</text>
+    <text x="760" y="350" fill="#f9e2af">[RUNNING]</text>
+
+    <text x="35" y="384" fill="#6c7086">ℹ No LLM context pollution: Subagents execute in parallel sandboxes.</text>
+  </g>
+</svg>

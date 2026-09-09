@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" width="100%" height="100%">
+  <defs>
+    <linearGradient id="rec-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#181825"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Window Container -->
+  <rect x="15" y="15" width="870" height="390" rx="12" fill="url(#rec-bg)" stroke="#313244" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Titlebar -->
+  <path d="M 15 27 A 12 12 0 0 1 27 15 L 873 15 A 12 12 0 0 1 885 27 L 885 52 L 15 52 Z" fill="#181825"/>
+  <circle cx="38" cy="34" r="6.5" fill="#f38ba8"/>
+  <circle cx="58" cy="34" r="6.5" fill="#f9e2af"/>
+  <circle cx="78" cy="34" r="6.5" fill="#a6e3a1"/>
+  <text x="450" y="38" text-anchor="middle" fill="#a6adc8" font-family="system-ui, sans-serif" font-size="12" font-weight="500">Stage 8 &amp; 9: Asciinema Terminal Walkthrough &amp; Delivery</text>
+
+  <!-- Terminal Content -->
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="13">
+    <text x="35" y="86" fill="#89b4fa" font-weight="bold">robedwards@workstation</text>
+    <text x="210" y="86" fill="#6c7086">:</text>
+    <text x="220" y="86" fill="#a6e3a1" font-weight="bold">~/legacy-monolith</text>
+    <text x="365" y="86" fill="#cdd6f4">$ agy run record --scenario walkthrough_scenario.json</text>
+
+    <text x="35" y="122" fill="#f38ba8" font-weight="bold">● RECORDING TERMINAL SESSION (Asciinema cast)</text>
+    <text x="430" y="122" fill="#6c7086">[Duration: 00:01:24 | FPS: 30]</text>
+
+    <text x="35" y="158" fill="#a6adc8">───────────────────────────────────────────────────────────────────────────────────────────</text>
+
+    <text x="35" y="184" fill="#a6e3a1">✔ Step 1:</text>
+    <text x="120" y="184" fill="#cdd6f4">AST transformation executed via OpenRewrite (@ast-grinder)</text>
+    
+    <text x="35" y="210" fill="#a6e3a1">✔ Step 2:</text>
+    <text x="120" y="210" fill="#cdd6f4">Maven build &amp; Spring Boot 3 test suite: 148 passed, 0 failed</text>
+
+    <text x="35" y="236" fill="#a6e3a1">✔ Step 3:</text>
+    <text x="120" y="236" fill="#cdd6f4">Golden master parity check: 100% response schema matching</text>
+
+    <text x="35" y="272" fill="#cba6f7">💾 Compiling recordings...</text>
+    <text x="55" y="298" fill="#89dceb">➔ Emitted: plans/modernization/20260909/walkthrough.cast</text>
+    <text x="55" y="320" fill="#89dceb">➔ Emitted: plans/modernization/20260909/walkthrough.gif (Optimized animated gif)</text>
+
+    <text x="35" y="356" fill="#a6e3a1">🚀 PR Opened:</text>
+    <text x="150" y="356" fill="#cdd6f4">gh pr create --title &quot;feat(modernize): Java 21 / Spring Boot 3 vertical slices&quot;</text>
+    <text x="35" y="380" fill="#6c7086">✔ Pull request URL: https://github.com/sapientcoffee/legacy-monolith/pull/42</text>
+  </g>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 440" width="100%" height="100%">
+  <defs>
+    <linearGradient id="panel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1e2e"/>
+      <stop offset="100%" stop-color="#11111b"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Container -->
+  <rect x="15" y="15" width="870" height="410" rx="12" fill="url(#panel-grad)" stroke="#313244" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Header -->
+  <path d="M 15 27 A 12 12 0 0 1 27 15 L 873 15 A 12 12 0 0 1 885 27 L 885 52 L 15 52 Z" fill="#181825"/>
+  <circle cx="38" cy="34" r="6.5" fill="#f38ba8"/>
+  <circle cx="58" cy="34" r="6.5" fill="#f9e2af"/>
+  <circle cx="78" cy="34" r="6.5" fill="#a6e3a1"/>
+  <text x="450" y="38" text-anchor="middle" fill="#cdd6f4" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Dual-Lens Assessment &amp; Automated Digestion Architecture</text>
+
+  <!-- Content Boxes -->
+  <!-- Left Box: @codmod-assessor -->
+  <g transform="translate(45, 75)">
+    <rect width="370" height="180" rx="8" fill="#181825" stroke="#89b4fa" stroke-width="1.5"/>
+    <text x="20" y="30" fill="#89b4fa" font-family="system-ui, sans-serif" font-size="14" font-weight="bold">🔍 @codmod-assessor (Semantic Lens)</text>
+    <text x="20" y="52" fill="#6c7086" font-family="system-ui, sans-serif" font-size="11">Context-Isolated Subagent (Flash Model)</text>
+
+    <text x="20" y="85" fill="#cdd6f4" font-family="ui-monospace, monospace" font-size="12">• Stack: Java 8 Monolith (WildFly 14)</text>
+    <text x="20" y="108" fill="#cdd6f4" font-family="ui-monospace, monospace" font-size="12">• Intent: Upgrade to Java 21 / Spring Boot 3.3</text>
+    <text x="20" y="131" fill="#f38ba8" font-family="ui-monospace, monospace" font-size="12">• Blockers: javax.* namespaces, deprecated APIs</text>
+    <text x="20" y="154" fill="#a6e3a1" font-family="ui-monospace, monospace" font-size="12">✔ Emits: modernization_report.html (3.9 MB)</text>
+  </g>
+
+  <!-- Right Box: @graphify-scout -->
+  <g transform="translate(485, 75)">
+    <rect width="370" height="180" rx="8" fill="#181825" stroke="#94e2d5" stroke-width="1.5"/>
+    <text x="20" y="30" fill="#94e2d5" font-family="system-ui, sans-serif" font-size="14" font-weight="bold">🕸️ @graphify-scout (Topological Lens)</text>
+    <text x="20" y="52" fill="#6c7086" font-family="system-ui, sans-serif" font-size="11">AST Dependency &amp; Directed Graph Analyzer</text>
+
+    <text x="20" y="85" fill="#cdd6f4" font-family="ui-monospace, monospace" font-size="12">• AST Nodes: 1,482 | Directed Edges: 4,119</text>
+    <text x="20" y="108" fill="#f9e2af" font-family="ui-monospace, monospace" font-size="12">• Central Hubs: OrderProcessor (degree: 38)</text>
+    <text x="20" y="131" fill="#cdd6f4" font-family="ui-monospace, monospace" font-size="12">• Seams: 14 Object, 6 Link, 3 Preprocessor</text>
+    <text x="20" y="154" fill="#a6e3a1" font-family="ui-monospace, monospace" font-size="12">✔ Emits: graphify-out/ (graph.json &amp; report)</text>
+  </g>
+
+  <!-- Arrows down -->
+  <path d="M 230 260 L 230 295 L 430 295" stroke="#89b4fa" stroke-width="2" stroke-dasharray="4" fill="none"/>
+  <path d="M 670 260 L 670 295 L 470 295" stroke="#94e2d5" stroke-width="2" stroke-dasharray="4" fill="none"/>
+
+  <!-- Center Synthesis Engine -->
+  <g transform="translate(180, 280)">
+    <rect width="540" height="125" rx="8" fill="#181825" stroke="#cba6f7" stroke-width="1.5"/>
+    <text x="270" y="28" text-anchor="middle" fill="#cba6f7" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">⚙️ scripts/digest_report.py (Dual-Lens Synthesis Engine)</text>
+    
+    <g font-family="ui-monospace, monospace" font-size="11" fill="#cdd6f4">
+      <text x="20" y="55">1. Synthesizes 7 Rs Portfolio (Retain, Replatform, Refactor, Rebuild)</text>
+      <text x="20" y="75">2. Constructs Mikado Dependency DAG &amp; 6 Vertical Migration Slices (0-5)</text>
+      <text x="20" y="95">3. Designs Log-Based CDC Cutover Pipeline (No dual-writes, no 2PC)</text>
+      <text x="20" y="115" fill="#a6e3a1">4. Emits: 05_PLAN.md + modernization_dashboard.html (Brain Mirrored)</text>
+    </g>
+  </g>
+</svg>
