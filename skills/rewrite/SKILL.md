@@ -1,168 +1,124 @@
 ---
 name: rewrite
-description: Orchestrates an end-to-end legacy application rewrite and cloud modernization workflow across discovery, parity extraction, domain modeling, vertical slicing, and adversarial review. Use this skill when the user asks to plan, orchestrate, or execute a comprehensive application rewrite, legacy migration, or full modernization lifecycle from discovery through PR delivery.
+description: Orchestrates an end-to-end legacy application rewrite and cloud modernization lifecycle. Guides ingestion of assessment findings, specification recovery, vertical slicing, adversarial review, incremental refactoring, and runtime parity verification. Use this skill when the user asks to plan, orchestrate, or execute a comprehensive application rewrite, legacy migration, or full modernization lifecycle.
 ---
 
-# ☕ Skill: Application Rewrite Brew Protocol
+# Skill: Application Rewrite Orchestrator
 
-You are executing the **Application Rewrite Brew Protocol**. Rewriting a legacy application requires a structured, risk-mitigated, and language-agnostic approach that guarantees functional parity, resolves architectural technical debt, and maintains compliance with the perfect brew state machine (Stages 0 to 9).
-
-This skill provides a generic orchestrator that walks through analyzing legacy assessment reports (regardless of language or framework), extracting domain details, establishing parity requirements, slicing the monolith, and coordinating implementation using existing specialized repository skills.
-
----
-
-## 🛠️ Unified Workspace Skills Mapping
-An application rewrite leverages the repository's suite of specialized autonomous barista swarm skills:
-1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to orchestrate parallel subagents (`@codmod-assessor`, `@graphify-scout`, `@seam-scout`, `@spec-recovery-agent`, and `@migration-scout`) for concurrent semantic scanning, AST dependency mapping, and seam discovery without context bloat.
-2. **Requirements & Discovery (Phase 2):** Use the `feature` / `write-prd` skill to initialize directories, draft `02_PRD.md`, and compile the master `visual-dashboard.html`.
-3. **Parity Extraction (Phase 3):** Use the `research` skill to do blind, factual extraction of legacy models, endpoints, and business rules to build `docs/glossary.md` and `docs/visual-glossary.html`.
-4. **Domain Architecture (Phase 4):** Use the `domain-modeling` skill to define target bounded contexts and architectural decisions.
-5. **Socratic Alignment (Phase 4):** Use the `grill` / `grilling` skill to stress-test your rewrite specification and implementation plan.
-6. **Execution & Kanban Planning (Phase 5):** Use the `kanban` skill to cut vertical slices, conduct dependency mapping, and generate interactive Kanban tracking boards.
-7. **TDD Code Generation (Phase 7):** Use `generate-code` to write backend/frontend codebase slices and `audit-code` for QA compliance.
-8. **Testing & Dev Hosting (Phase 7):** Use `dev` to run local backend/frontend servers, and `test-api` to execute local verification suites.
-9. **Walkthrough & Recording (Phase 8):** Use the `record` skill to capture high-fidelity terminal playbacks and walkthroughs.
-10. **Delivery & Branching (Phase 9):** Use the `worktree` skill and `github-workflow` to manage isolated branches and open clean pull requests.
-
----
-
-## 🧭 Application Rewrite Lifecycle Flowchart
+Orchestrate the end-to-end modernization of legacy codebases into cloud-native architectures. Ensure zero behavioral regressions, decouple monolithic hubs via Anti-Corruption Layers, and verify runtime parity.
 
 ```mermaid
 flowchart TD
-    subgraph P1["Phase 1: Ingestion & Dual-Lens Digestion"]
-        Assess["assess skill<br/>(@codmod-assessor, @graphify-scout & scouts)"] --> Reports["modernization_report.html & graphify-out/"]
-        Reports --> Digest["scripts/digest_report.py & generate_dashboard.py"]
-        Digest --> BasePlan["05_PLAN.md, migration_matrix.json, modernization_dashboard.html"]
+    subgraph P1["Phase 1: Assessment Ingestion"]
+        A1["Locate or Run assess skill"] --> A2["Ingest 01_discovery/ & 02_synthesis/<br/>• codmod_assessment_report.html<br/>• graphify_ast_graph.json<br/>• migration_matrix.json"]
     end
 
-    subgraph P2["Phase 2-4: Requirements, Extraction & Bounded Contexts"]
-        BasePlan --> PRD["write-prd skill: 02_PRD.md & Parity Scope"]
-        PRD --> Research["research skill: Blind Extraction & docs/glossary.md"]
-        Research --> ArchModel["domain-modeling: Bounded Contexts, ACLs & Seams"]
-        ArchModel --> Grill["grill skill: Socratic Stress-Testing"]
+    subgraph P2["Phase 2: Specification Archaeology"]
+        A2 --> B1["Extract Domain Rules & Schemas"]
+        B1 --> B2["Resolve [AMBIGUOUS_SPEC] Items"]
+        B2 --> B3["Compile docs/glossary.md"]
     end
 
-    subgraph P5["Phase 5: Mikado Slicing & Vertical Decomposition"]
-        Grill --> Mikado["Mikado Method Dependency Graph"]
-        Mikado --> Slices["Vertical Slices 0-5 (Foundation to Observability)"]
-        Slices --> SlicePlan["Draft 05_PLAN.md with Mikado Slices"]
+    subgraph P3["Phase 3: Target Architecture & Boundaries"]
+        B3 --> C1["Define Bounded Contexts & ACLs"]
+        C1 --> C2["Design Transactional Outbox + CDC"]
+        C2 --> C3["Draft 04_SPEC.md"]
     end
 
-    subgraph P55["Phase 5.5: Multi-Persona Adversarial Review Loop"]
-        SlicePlan --> Swarm["Dispatch Reviewer Swarm<br/>• @reviewer-exec (TCO & RPO)<br/>• @reviewer-engineer (AST & DX)<br/>• @reviewer-architect (Hubs & ACLs)<br/>• @reviewer-pm (Parity & Gherkin)"]
-        Swarm --> Arbiter["@review-arbiter Synthesis & Consensus Scoring<br/>(Score = 100 - (25C + 10H + 3M + 1L))"]
-        Arbiter --> ConvergenceCheck{"Score >= 90%<br/>& 0 Blockers?"}
-        ConvergenceCheck -->|No & Round < 3| PatchPlan["Auto-Patch 05_PLAN.md with Arbiter Directives"] --> Swarm
-        ConvergenceCheck -->|No & Round >= 3| CircuitBreak["Circuit Breaker Tripped<br/>Human Arbitration Required"]
-        ConvergenceCheck -->|Yes| RobustPlan["Certified Robust Plan & 05_ADVERSARIAL_REVIEW.md"]
+    subgraph P4["Phase 4: Vertical Slicing"]
+        C3 --> D1["Decompose Monolith into Slices<br/>(Slice 0 to N)"]
+        D1 --> D2["Draft 05_PLAN.md with Mikado DAG"]
     end
 
-    subgraph P69["Phase 6-9: Execution, Parity Verification & Delivery"]
-        RobustPlan --> HumanGate["Stage 6 Human Review Gate (🛑 STOP)"]
-        CircuitBreak --> HumanGate
-        HumanGate -->|Approved| TDD["Stage 7: TDD Implementation (bean-brewer)"]
-        TDD --> Parity["@runtime-parity-verifier (Golden Master & Shadowing)"]
-        Parity --> Proof["Stage 8: Proof & Walkthrough (record skill)"]
-        Proof --> PR["Stage 9: PR Delivery (worktree & github-workflow)"]
+    subgraph P5["Phase 5: Adversarial Review"]
+        D2 --> E1["Invoke adversarial-review skill"]
+        E1 --> E2{"Convergence Gate<br/>Score >= 90%?"}
+        E2 -->|Needs Revision| E1
+        E2 -->|Converged| F1["Certified Robust Plan"]
+    end
+
+    subgraph P6["Phase 6: Incremental TDD & Parity Verification"]
+        F1 --> G1["Implement Slices with Characterization Tests"]
+        G1 --> G2["Dispatch @runtime-parity-verifier"]
+        G2 --> G3{"Parity Confirmed?"}
+        G3 -->|Discrepancies| G1
+        G3 -->|Verified| H1["Stage 7 Delivery Gate"]
     end
 ```
 
 ---
 
-## 🧭 Generic & Flexible Step-by-Step Protocol
+## Operational Protocol
 
-### Step 1: Ingest Assessment Report & Architectural Dependencies (Dual-Lens Engine)
-1. **Locate or Generate Assessment & Dependency Map:**
-   - Look for pre-generated assessment artifacts (e.g., `modernization_report.html` and `graphify-out/graph.json`). If none exist, invoke the `assess` skill, which dispatches parallel subagents (`@codmod-assessor`, `@graphify-scout`, `@seam-scout`, `@spec-recovery-agent`, and `@migration-scout`) to generate discovery artifacts concurrently without context pollution.
-   - Run the automated digest tool to cross-reference recommendations with codebase architecture and build the unified dashboard:
-     ```bash
-     python3 scripts/digest_report.py \
-       --report <path-to-report.html> \
-       --graph <path-to-graphify-out/graph.json> \
-       --output-dir assessments/runs/$(date +%Y%m%d_%H%M%S)
-     ```
-     This automatically organizes artifacts into `01_discovery/`, `02_synthesis/`, and `04_migration_plan/`, emitting `index.html` at the run root (with backward-compatible `modernization_dashboard.html`), while updating `assessments/index.html` and mirroring `00_visual-dashboard.html` to conversation system artifacts for instant inspection.
-2. **Determine Source Stack & Target Runtime:**
-   - Identify the source language and frameworks (e.g., legacy Java/Spring, .NET Framework / C#, C/C++, COBOL, mainframe, or modern monolith).
-   - Identify the target modernized platform (e.g., Java 21/Spring Boot 3.x, .NET Core/8/9, Go, Node.js/TypeScript).
-   - Identify the target compute environment (e.g., Cloud Run, Google Kubernetes Engine (GKE), App Engine) and data tier (e.g., Google Cloud SQL, Cloud Spanner, Cloud Memorystore).
-3. **Extract Architectural Structure & Component Modules:**
-   - Note codebase scale (Lines of Code (LOC) and file counts).
-   - Inspect the codebase breakdown for discovered **Component Modules** (functional subsystems like Repositories, Entities, Controllers) and **Central Dependency Hubs** (load-bearing classes that have the most incoming callers and outgoing dependencies, meaning high blast radius).
-   - Map external dependencies, runtime frameworks, and build engines (e.g., Maven, Gradle, MSBuild, dotnet CLI, npm).
-4. **Identify Architectural Technical Debt & Strategic Drivers:**
-   - **Coupling & Cohesion:** Are business rules, data access, and UI tightly coupled? Are there cross-subsystem dependency leaks?
-   - **Central Dependency Hubs:** Which core classes act as bottlenecks that require Anti-Corruption Layers (ACLs) or Facade isolation to prevent changes from rippling across the system?
-   - **State & Scalability:** Is the application limited by single-node in-memory state or local sessions that prevent horizontal scalability?
-   - **Security Posture:** Are there hardcoded secrets, plain-text connection strings, or unrestricted actuator/metrics endpoints?
-   - **Concurrency & Performance:** Are blocking I/O calls limiting throughput? (e.g., synchronous database queries or single-threaded loops).
+### Phase 1: Ingest Assessment Deliverables
+1. **Verify Assessment Artifacts**:
+   - Check if an assessment run exists under `assessments/runs/latest/` or `assessments/index.html`.
+   - If no assessment run is found, instruct the user to run the `assess` skill first, or invoke it to generate discovery artifacts.
+2. **Extract Key Constraints**:
+   - Identify legacy source stack, language version, and build system.
+   - Inspect Central Dependency Hubs from `01_discovery/graphify_architecture_report.md` to identify coupling bottlenecks.
+   - Extract the 7 Rs classification from `02_synthesis/migration_matrix.json` (Retire vs Replatform vs Refactor).
+   - Target modern cloud compute (Cloud Run, GKE) and managed database engines (Cloud SQL, Spanner).
 
-### Step 2: Initialize Plan & Parity Requirements (Stage 2 - PRD)
-1. **Initialize Versioned Directory:**
-   - Determine a target slug name (e.g., `rewrite-<app-slug>`).
-   - Create the versioned path: `plans/<slug>/<YYYY-MM-DD_HHMM>/`.
-2. **Draft the PRD (`02_PRD.md` & `visual-dashboard.html`):**
-   - Incorporate the report findings and strategic recommendations directly.
-   - Mandate strict API, input validation, and layout/view parity for existing screens and routes.
-   - Specify **Non-Goals** (e.g., "We are NOT adding new user features in this pass; this is a strict rewrite for technical modernization, security, and performance").
-   - Follow the **Dual-Write Requirement** (Rule 5) via `python3 scripts/manage_dashboard.py mirror --plan-dir "plans/<slug>/<timestamp>"` to mirror `visual-dashboard.html` and `02_PRD.md` to system artifacts as `00_visual-dashboard.html` and `02_prd.md` respectively.
+---
 
-### Step 3: Domain Extraction & Ubiquitous Glossary (Stage 3 - Extraction)
-1. **Launch Research Subagent:** Run the `research` skill to scan the legacy code and extract factual specifications:
-   - **Legacy Models & Schemas:** Map database schemas, table layouts, core entity relationships, and value objects.
-   - **Legacy API & Entry Surfaces:** Extract the full catalog of entry points (HTTP routes, SOAP/WSDL endpoints, MVC controllers, file ingestion jobs, or CLI interfaces).
-2. **Publish the Ubiquitous Glossary:**
-   - Create `docs/glossary.md` and `docs/visual-glossary.html` documenting domain terms, business rules, validations, and API contracts.
-   - Mirror these to the system artifacts folder as `01_visual-glossary.html` (Rule 5).
+### Phase 2: Specification Archaeology & Ubiquitous Language
+1. **Extract Domain Rules & Invariants**:
+   - Inspect legacy controllers, entity models, and business services using `view_file` and `grep_search`.
+   - Reconstruct database schemas, primary keys, foreign key constraints, and indexing strategies.
+2. **Compile Domain Glossary**:
+   - Write domain definitions, business rules, and API contracts into `docs/glossary.md`.
+   - If implicit, contradictory, or undocumented behaviors are found, record them as `[AMBIGUOUS_SPEC: <description>]` and clarify with the user before proceeding to implementation.
 
-### Step 4: Target Domain Modeling & Socratic Alignment (Stage 4 - Spec)
-1. **Architect Target Models & Architectural Quanta:** Use the `domain-modeling` skill to design target entity classes, repositories, and services aligned with modern target runtime idioms (e.g., Java Records, .NET primary constructors, non-blocking handlers). Calculate architectural quanta by balancing disintegration drivers (agility, elasticity, blast radius) against integration drivers (ACID transactions, saga overhead, latency).
-2. **Strangler Fig & Structural Decoupling:**
-   - **Ingress Interception:** Plan API Gateway, Edge Reverse Proxy, or CDN routing to divert traffic between legacy monolith and target microservices.
-   - **UI Composition:** Select Page Composition (routing URL paths to modern micro-frontends at edge CDN) or Widget Composition (Edge-Side Includes / micro-frontend containers).
-   - **Branch by Abstraction:** For internal capabilities lacking HTTP boundaries, execute across 5 stages: (1) Abstract provider interface, (2) Re-point call sites to abstraction, (3) Alternate out-of-process implementation, (4) Dynamic feature toggle, (5) Decommission legacy implementation.
-3. **Data Modernization & State Integrity Strategy (No Dual-Writes):**
-   - Strictly prohibit application-level dual-writes and heavy 2PC protocols.
-   - Implement the **Transactional Outbox Pattern** coupled with **Log-Based Change Data Capture (CDC)** (e.g. Debezium tailing WAL/binlog to Kafka).
-   - Coordinate cross-boundary transactions using **Sagas** (orchestrated or choreographed) with idempotent handlers and semantic compensating actions.
-   - Execute the 4-phase data cutover: (A) Snapshot + log tailing ➔ (B) Monolith writes authoritative ➔ (C) Modern service writes authoritative with reverse-CDC rollback ➔ (D) Sever synchronization.
-4. **Draft `04_SPEC.md` & `04_visual-spec.html`:** Document the target system design, data architecture, security hardening (Secret Manager, IAM), and SRE/observability integrations. Mirror to system artifacts.
-5. **Conduct Socratic Grill:** Execute the `grill` / `grilling` skill to stress-test your design and ensure all edge cases are answered before writing code.
+---
 
-### Step 5: Decompose Monolith into Logical Vertical Slices (Stage 5 - Execution Plan)
-1. **The Mikado Method Dependency Graph:**
-   - Define the root architectural modernization goal.
-   - Map prerequisite dependencies and leaf nodes into a directed acyclic graph (DAG).
-   - Enforce the Mikado refactoring rule during execution: if an attempted code change breaks compilation or characterization tests, immediately execute a hard reset (`git reset --hard`), record the blocking cause as a prerequisite child node, and resolve leaf nodes first.
-2. **Draft the Slice-Based Execution Plan (`05_PLAN.md`):**
-   - Establish physical contract signatures first.
-   - Categorize tasks into `[Serial]` and parallelizable (`[Parallel]`) chunks.
-   - Leverage `scripts/digest_report.py` to auto-generate the preliminary `05_PLAN.md` and `migration_matrix.json`.
-   - **Dependency-Ordered Slicing Pattern (Leaf to Root):**
-     - **Slice 0 (Common Foundation & Infrastructure):** Target build system configuration (JDK 21, .NET 9), runtime properties, compiler plugins, schema migrations, and CI wrappers.
-     - **Slice 1 (Standalone Leaf Modules & Lookup Models):** Low-coupling modules with minimal external dependencies (e.g., lookups, dictionary models, enums). Serves to validate pipeline compilation, data access, and routing.
-     - **Slice 2 (Core Domain Repositories & Data Layer):** Main domain services and repositories handling state mutations, validation rules, and heavy transactions. Apply `codmod`'s data layer recommendations (e.g., `javax.*` to `jakarta.*`).
-     - **Slice 3 (Central Dependency Hubs & Monolith Decoupling):** High-blast-radius core classes with the most incoming callers and outgoing dependencies. Encapsulate with Anti-Corruption Layers (ACLs) or Facade interfaces to isolate changes.
-     - **Slice 4 (Ingress Controllers & Edge Adapters):** MVC controllers, REST endpoints, request formatters, and web templates.
-     - **Slice 5 (Target Cloud Hardening & Observability):** Cloud Run configuration, Cloud SQL pooling, GCP Secret Manager, health probes, and OpenTelemetry exporters.
-3. **Generate Kanban Visuals:** Use the `kanban` skill to generate an interactive board and Mermaid diagram to map slices and track progress. Mirror `05_PLAN.md` to system artifacts.
+### Phase 3: Target Domain Architecture & Structural Decoupling
+1. **Define Bounded Contexts & Anti-Corruption Layers (ACLs)**:
+   - Separate disparate domain models into isolated packages or services.
+   - Place Anti-Corruption Layers or Facades in front of legacy Central Dependency Hubs to prevent monolithic coupling leaks.
+2. **Data Consistency Strategy**:
+   - Do not use distributed 2PC transactions or application-level dual writes.
+   - Employ the **Transactional Outbox Pattern** combined with Change Data Capture (CDC) or event messaging.
+3. **Compile Technical Specification**:
+   - Document target APIs, entity definitions, IAM roles, and cloud resource requirements in `04_SPEC.md`.
 
-### Step 5.5: Multi-Persona Adversarial Plan Hardening Loop (Stage 5.5)
-Before presenting `05_PLAN.md` to the user at the Step 6 Human Gate, execute the multi-persona adversarial review loop to stress-test the proposal from opposing perspectives:
-1. **Dispatch Adversarial Reviewers:**
-   - **`@reviewer-exec` (Executive Perspective):** Scrutinizes TCO, cloud run-rate, licensing sunset timelines, and rollback RPO/MTD.
-   - **`@reviewer-engineer` (Engineering Perspective):** Scrutinizes AST safety, reflection breakage, build times, testability, and DX.
-   - **`@reviewer-architect` (Architecture Perspective):** Scrutinizes Central Dependency Hubs (`graphify`), Anti-Corruption Layers, distributed state, and horizontal scaling.
-   - **`@reviewer-pm` (Product Perspective):** Scrutinizes behavioral parity, undocumented legacy quirks, acceptance criteria (Gherkin), and scope drift.
-2. **Arbiter Reconciliation & Convergence:**
-   - Invoke **`@review-arbiter`** or run `python3 scripts/review_loop.py --plan-dir <plan_dir>` to parse reviewer findings, calculate the consensus score ($100 - (25C + 10H + 3M + 1L)$), reconcile contradictory trade-offs, and emit `adversarial_review_matrix.json` and `05_ADVERSARIAL_REVIEW.md`.
-   - **Convergence Gate:** The plan is hardened and ready for human review once Consensus Score $\ge 90.0\%$ and zero Critical/High findings remain.
-   - **Circuit Breaker:** If convergence is not met within 3 rounds, the loop halts and flags the unresolved trade-offs for human arbitration.
-3. **Synchronize Unified Dashboard:** Re-run `scripts/generate_dashboard.py` to activate the "🛡️ Adversarial Review" tab and dual-write artifacts (`05_ADVERSARIAL_REVIEW.md`, `adversarial_review_matrix.json`) to the brain directory.
+---
 
-### Step 6: Human Gate & Execution (Stages 6 to 9)
-1. **Halt for Approval:** Present the PRD, Spec, Hardened Slice Execution Plan, and Adversarial Review Scorecard to the user. Require explicit "approve" verification.
-2. **Slice-by-Slice Implementation:** Execute using TDD via `/tdd` (silent on success) utilizing the `generate-code` and `audit-code` skills to build and verify each slice.
-3. **Walkthrough Proof:** Capture terminal playbacks or page tests with the `record` command.
-4. **Isolated Branch Delivery:** Build production packages, isolate branch slices using the `worktree` command, and create elegant PRs using `gh` via the `github-workflow` skill.
+### Phase 4: Vertical Slicing & Execution Planning
+1. **Mikado Slicing Strategy**:
+   - Break down the rewrite into vertical, independently verifiable slices:
+     - **Slice 0 (Foundation):** Target project scaffolding, CI/CD, database schemas, and baseline health checks.
+     - **Slice 1 (Read-Only Path):** Legacy read API replication and contract characterization tests.
+     - **Slice 2 (State Mutation & Outbox):** Write paths, transactional outbox events, and validation logic.
+     - **Slice 3 (Integration & Cutover):** Edge routing, Strangler Fig proxying, and reverse-sync.
+2. **Compile `05_PLAN.md`**:
+   - Detail tasks, acceptance criteria, file targets, and rollback procedures.
+
+---
+
+### Phase 5: Adversarial Review Loop
+1. **Invoke Review Skill**:
+   - Call the `adversarial-review` skill to audit `05_PLAN.md` against Executive, Engineering, Architectural, and Product criteria.
+2. **Iterate to Convergence**:
+   - Review and incorporate directives from `@review-arbiter` until the consensus score reaches $\ge 90\%$ with 0 Critical and 0 High defects.
+   - Present the hardened plan to the user for formal approval before modifying code.
+
+---
+
+### Phase 6: Incremental Implementation & Runtime Parity Verification
+1. **Implement Slices Incrementally**:
+   - Write characterization test fixtures capturing legacy inputs and outputs.
+   - Generate target code using `write_to_file` and `replace_file_content`.
+   - Execute local build and test commands using `run_command` in sandboxed terminals.
+2. **Dynamic Parity Verification**:
+   - For each completed vertical slice, invoke `@runtime-parity-verifier` using `invoke_subagent`.
+   - Replay test vectors against both the legacy endpoint and the modernized candidate.
+   - Require `APPROVED: RUNTIME_PARITY_VERIFIED` in `docs/parity_discrepancies.md` before concluding the slice.
+
+---
+
+### Phase 7: Delivery & Final Hand-Off
+1. **Emit Modernization Manifest**:
+   - Update `assessments/runs/latest/run_manifest.json` with final implementation status, test metrics, and parity diffs.
+2. **Present Walkthrough**:
+   - Provide the user with a summary of delivered slices, verified parity results, and links to the updated dashboard and code changes.
