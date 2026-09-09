@@ -8,5 +8,6 @@
 - **`rewrite` (`skills/rewrite`)**: Application rewrite brew protocol: ingesting modernization assessment reports, mapping source-to-target runtimes, and decomposing monolithic systems into vertical execution slices.
 - **`@migration-scout` (`agents/migration-scout.md`)**: Inspects legacy repos across Java, .NET, Python, and C/C++ to identify frameworks, version compatibility, and vendor lock-in.
 - **`@ast-grinder` (`agents/ast-grinder.md`)**: Syntactic and Abstract Syntax Tree (AST) refactoring, automated codemods, and deprecated API replacements.
-- **`@parity-auditor` (`agents/parity-auditor.md`)**: Verifies strict API contract, behavior, and schema parity between legacy systems and modern targets.
+- **`@runtime-parity-verifier` (`agents/runtime-parity-verifier.md`)**: Dynamic sandbox replayer verifying functional, behavioral, and schema parity via active synthetic traffic replay into `docs/parity_discrepancies.md`.
 - **`@msbuild` (`agents/msbuild.md`)**: Executes and summarizes verbose legacy .NET / C++ builds without flooding LLM context.
+

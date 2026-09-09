@@ -46,7 +46,7 @@ In software engineering, legacy monoliths and aging codebases are the coarse, un
 | **`rewrite` (`skills/rewrite`)** | Skill | Language-agnostic rewrite brew protocol: ingests assessment reports, maps source-to-target runtimes, establishes strict contract parity, and cuts vertical slices into `05_PLAN.md`. |
 | **`@migration-scout`** | Agent | Autonomous codebase scanner detecting source language levels, application servers, and cloud SDK lock-in. |
 | **`@ast-grinder`** | Agent | AST transformation engine executing automated codemods, syntax modernization, and deprecated API replacements. |
-| **`@parity-auditor`** | Agent | Compares legacy inputs/outputs and API schemas against modern reimplementations to guarantee strict functional parity. |
+| **`@runtime-parity-verifier`** | Agent | Evaluates functional, behavioral, and schema parity via active synthetic request replay in an execution sandbox, writing detailed diffs into `docs/parity_discrepancies.md`. |
 | **`@msbuild`** | Agent | Manages verbose legacy .NET and C++ builds during modernization passes without overflowing LLM context. |
 
 ---
@@ -86,7 +86,7 @@ flowchart TD
     subgraph GrindingPass["🔄 Phase 4: AST Transformation (@ast-grinder & @msbuild)"]
         ASTTransform["@ast-grinder (Automated Syntax & Codemods)"]
         BuildCheck["@msbuild (Legacy Compilation Verification)"]
-        ParityCheck["@parity-auditor (Validate Input/Output Parity)"]
+        ParityCheck["@runtime-parity-verifier<br/>(Synthetic Request Replay & Diffs)"]
         ParityVerdict{"Strict Parity Maintained?"}
     end
 
