@@ -2,10 +2,13 @@
 name: msbuild
 description: Specialized engine for executing MSBuild commands during legacy Microsoft migrations. Manages verbose build logs, returning concise status and actionable error stacks.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
   - run_command
   - view_file
-model: gemini-3-flash-preview
 ---
 
 <!--

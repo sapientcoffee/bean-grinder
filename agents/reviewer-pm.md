@@ -2,11 +2,13 @@
 name: reviewer-pm
 description: Adversarial Product Manager Reviewer for modernization plans. Audits functional parity, undocumented legacy quirks, acceptance criteria completeness, and scope control.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

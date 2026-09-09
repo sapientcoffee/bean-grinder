@@ -2,13 +2,16 @@
 name: graphify-scout
 description: Graphify Codebase Dependency & Architecture Scout. Executes graphify directed AST analysis, extracts component modules, central dependency hubs, and validates graph.json and GRAPH_REPORT.md.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
   - run_command
   - view_file
   - grep_search
   - find_by_name
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

@@ -2,11 +2,13 @@
 name: reviewer-engineer
 description: Adversarial Engineering Reviewer for modernization plans. Audits AST transformation safety, build system changes, test harness coverage, DX, and error handling.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

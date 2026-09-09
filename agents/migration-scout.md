@@ -2,12 +2,14 @@
 name: migration-scout
 description: Automated Codebase Pre-Scanner for Modernization. Inspects legacy codebases, detects frameworks, runtimes, and libraries, and maps optimal intents for codmod.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
+  - view_file
   - grep_search
   - find_by_name
-  - view_file
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

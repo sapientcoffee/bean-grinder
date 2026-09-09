@@ -2,12 +2,15 @@
 name: review-arbiter
 description: Cross-Functional Review Arbiter and Synthesizer. Reconciles adversarial reviews from Exec, Engineer, Architect, and PM, resolves trade-offs, and scores plan convergence.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
   - view_file
   - grep_search
   - list_dir
   - run_command
-model: gemini-3.1-pro-preview
 ---
 
 <!--

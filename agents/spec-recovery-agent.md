@@ -2,12 +2,14 @@
 name: spec-recovery-agent
 description: Specification Recovery & Archaeology Specialist. Reconstructs business rules, state machines, and branch conditions from legacy source code under strict Human-in-the-Loop governance.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - find_by_name
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--
