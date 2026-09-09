@@ -21,3 +21,8 @@ Welcome to **Bean-Grinder**, the automated code modernization and migration engi
   - Convergence is achieved ONLY when consensus score $\ge 90.0\%$ and zero Critical or High severity blockers remain.
   - If consensus is not reached within 3 rounds, the circuit breaker trips, freezing the plan and documenting the deadlock for human decision-making.
 
+## 3. Dashboard Lifecycle & Dual-Write Mirroring
+* **11-Tab Unified Modernization Dashboard:** Every modernization plan must generate or update `modernization_dashboard.html` containing all 11 tabs (Scorecard, Slices, Hubs, Modules, 7 Rs Strategy, Seams, Outbox CDC, CodMod, Graphify, Adversarial Review, and Migration Plan).
+* **Dual-Write Guarantee:** Always mirror `modernization_dashboard.html` to `00_visual-dashboard.html` in the conversation system artifacts directory (`~/.gemini/antigravity/brain/<conversation-id>/`) so it renders immediately in the UI artifact viewer.
+
+

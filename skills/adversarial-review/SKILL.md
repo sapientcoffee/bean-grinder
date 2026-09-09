@@ -44,26 +44,43 @@ This skill executes a multi-persona adversarial review loop on a newly drafted m
 ## 🔄 Iterative Review Protocol
 
 ```mermaid
-graph TD
-    Plan[05_PLAN.md Drafted] --> Dispatch[Dispatch 4 Adversarial Reviewers]
-    Dispatch --> Exec["💼 @reviewer-exec"]
-    Dispatch --> Eng["💻 @reviewer-engineer"]
-    Dispatch --> Arch["🏛️ @reviewer-architect"]
-    Dispatch --> PM["📋 @reviewer-pm"]
-    
-    Exec --> Arbiter["⚖️ @review-arbiter Synthesis"]
-    Eng --> Arbiter
-    Arch --> Arbiter
-    PM --> Arbiter
-    
-    Arbiter --> Eval{"Consensus >= 90%<br>& 0 Critical/High?"}
-    
-    Eval -- "No (Round < 3)" --> Patch["Patch 05_PLAN.md Directives"]
-    Patch --> Dispatch
-    
-    Eval -- "Yes (Converged)" --> Gate["Stage 6: Human Review Gate"]
-    Eval -- "No (Round >= 3)" --> CircuitBreaker["Circuit Breaker Tripped<br>Human Arbitration Required"]
-    CircuitBreaker --> Gate
+flowchart TD
+    subgraph Inputs["Inputs to Adversarial Review"]
+        Plan["05_PLAN.md (Draft Plan)"]
+        Matrix["migration_matrix.json"]
+        Graph["graphify-out/GRAPH_REPORT.md"]
+        Report["modernization_report.html"]
+    end
+
+    Inputs --> Dispatch["Dispatch 4 Adversarial Reviewers (Parallel)"]
+
+    subgraph Swarm["Stakeholder Reviewer Swarm"]
+        Exec["💼 @reviewer-exec<br/>• TCO & Cloud Spend<br/>• Rollback RPO/MTD<br/>• Licensing Sunsets"]
+        Eng["💻 @reviewer-engineer<br/>• AST Safety & Reflection<br/>• Build Performance<br/>• Contract Test Fixtures"]
+        Arch["🏛️ @reviewer-architect<br/>• Central Hub Blast Radius<br/>• Anti-Corruption Layers<br/>• Outbox CDC & Scalability"]
+        PM["📋 @reviewer-pm<br/>• Behavioral Parity<br/>• Legacy Quirks Preservation<br/>• Gherkin Scenarios"]
+    end
+
+    Dispatch --> Exec & Eng & Arch & PM
+
+    subgraph Arbitration["Synthesis & Arbitration (@review-arbiter & scripts/review_loop.py)"]
+        Exec & Eng & Arch & PM --> Parse["Payload Parser & Deduplication"]
+        Parse --> Score["Consensus Formula:<br/>Score = max(0, 100 - 25C - 10H - 3M - 1L)"]
+        Score --> TradeOffs["Reconcile Conflicts:<br/>• Exec vs Architect: In-Process Facade<br/>• PM vs Engineer: Legacy Adapter Envelope<br/>• Exec vs PM: Phased Criticality Slicing"]
+        TradeOffs --> Directive["Compile Plan Patch Directives"]
+    end
+
+    Directive --> Eval{"Consensus >= 90.0%<br/>& 0 Critical & 0 High?"}
+
+    Eval -->|"No & Round < 3"| AutoPatch["Auto-Patch 05_PLAN.md<br/>(Append Hardening Audit Log)"]
+    AutoPatch --> Dispatch
+
+    Eval -->|"No & Round >= 3"| CircuitBreaker["Circuit Breaker Tripped<br/>Freeze Plan & Flag Deadlocks"]
+    CircuitBreaker --> Gate["Stage 6: Human Review Gate (🛑 STOP)"]
+
+    Eval -->|"Yes (Converged)"| Converged["Emit 05_ADVERSARIAL_REVIEW.md<br/>& adversarial_review_matrix.json"]
+    Converged --> Dash["Update Unified Dashboard<br/>(🛡️ Adversarial Review Tab)"]
+    Dash --> Gate
 ```
 
 ### Step 1: Dispatch Adversarial Swarm

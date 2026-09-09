@@ -7,6 +7,41 @@ description: Exposes the app modernization assessment skill, performing parallel
 
 You are executing the application modernization assessment workflow. Follow this step-by-step orchestrator protocol to run semantic and architectural assessments concurrently via context-isolated subagents.
 
+```mermaid
+flowchart TD
+    Start["Assess Command / Target Workspace"] --> GCPGuard{"GCP Credential Guard<br/>(gcloud auth print-access-token)"}
+    GCPGuard -->|Missing Credentials| HaltGuide["Halt & Prompt Resolution Guide"]
+    GCPGuard -->|Valid Credentials| CostShieldCheck{"--estimate-cost<br/>flag passed?"}
+    
+    CostShieldCheck -->|Yes| CostCalc["Run codmod create --estimate-cost<br/>Calculate Bill & Token Projections"]
+    CostCalc --> ConfirmGate{"> 100k LOC or High Bill?<br/>Prompt User Confirmation (y/N)"}
+    ConfirmGate -->|Cancelled| Abort["Abort Execution"]
+    ConfirmGate -->|Confirmed| SubagentsDispatch
+    CostShieldCheck -->|No (Default)| SubagentsDispatch
+    
+    subgraph SubagentsDispatch["Concurrent Subagent Dispatch (invoke_subagent)"]
+        direction TB
+        subgraph Sub1["@codmod-assessor"]
+            C1["Detect Stacks & Map Intent"] --> C2["codmod create --intent ..."]
+            C2 -->|Fail| C3["codmod collect-logs -o codmod_logs.zip"]
+            C2 -->|Success| C4["Extract Modernization Blockers"]
+        end
+        subgraph Sub2["@graphify-scout"]
+            G1["graphify . --directed"] --> G2["Extract Central Dependency Hubs"]
+            G2 --> G3["Generate graphify-out/ artifacts"]
+        end
+        subgraph Sub3["Optional Deep-Scan Scouts"]
+            S1["@seam-scout: Feathers' Seams"]
+            S2["@spec-recovery-agent: Rules & [AMBIGUOUS_SPEC]"]
+            S3["@migration-scout: EOL & 7 Rs Matrix"]
+        end
+    end
+    
+    SubagentsDispatch --> Ingest["Stage 2: Dual-Lens Digestion (scripts/digest_report.py)"]
+    Ingest --> Outputs["Emit Plan & Unified Dashboard<br/>• 05_PLAN.md<br/>• migration_matrix.json<br/>• modernization_dashboard.html<br/>• 00_visual-dashboard.html (Brain Mirror)"]
+    Outputs --> Scorecard["Present Executive Scorecard & Advance to Adversarial Review"]
+```
+
 ---
 
 ## 1. Initial Setup & GCP Credential Guard

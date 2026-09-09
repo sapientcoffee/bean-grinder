@@ -66,7 +66,7 @@ Legacy application modernization has evolved from an unpredictable, high-risk "b
 
 ## 🔄 The Multi-Stage Modernization Protocol (Why, What & How)
 
-The modernization lifecycle is structured into four sequential, verifiable stages:
+The modernization lifecycle is structured into five sequential, verifiable stages adhering to the **Bean-to-Cup** SDLC standard:
 
 ```mermaid
 flowchart TD
@@ -98,7 +98,7 @@ flowchart TD
         DigestCLI --> P7R & SeamsInv & OutboxCDC & MikadoTree & Slices --> ArtifactsPlan
     end
 
-    subgraph S25["Stage 2.5: Multi-Persona Adversarial Review Loop"]
+    subgraph S25["Stage 2.5 / 5.5: Multi-Persona Adversarial Review & Hardening Loop"]
         direction TB
         ReviewSkill["skills/adversarial-review Orchestrator"]
         RevExec["@reviewer-exec<br/>(TCO, RPO/MTD, Sunsets)"]
@@ -107,30 +107,43 @@ flowchart TD
         RevPM["@reviewer-pm<br/>(Parity, Quirks, Gherkin)"]
         Arbiter["@review-arbiter<br/>(Consensus Scoring >= 90%)"]
         ReviewLoopCLI["scripts/review_loop.py Engine"]
+        AuditReport["05_ADVERSARIAL_REVIEW.md & adversarial_review_matrix.json"]
         
         ArtifactsPlan --> ReviewSkill
         ReviewSkill --> RevExec & RevEng & RevArch & RevPM
         RevExec & RevEng & RevArch & RevPM --> Arbiter --> ReviewLoopCLI
-        ReviewLoopCLI -->|"Iterative Patch (Max 3 Rounds)"| ReviewSkill
+        ReviewLoopCLI -->|"Auto-Patch 05_PLAN.md (Rounds < 3)"| ReviewSkill
+        ReviewLoopCLI -->|"Emit Audit Artifacts"| AuditReport
     end
 
-    subgraph S3["Stage 3: Parity Verification & Sandboxed Execution"]
+    subgraph S3["Stage 6: Human Review Gate (🛑 STOP)"]
+        direction TB
+        HumanReview["Human Review Gate & Dashboard Sign-off<br/>(Inspect 05_PLAN.md & 00_visual-dashboard.html)"]
+        CircuitBreakerNotice["Circuit Breaker Mediation<br/>(If deadlock reached at Round 3)"]
+        
+        ReviewLoopCLI -->|"Consensus >= 90% & 0 Blockers"| HumanReview
+        ReviewLoopCLI -.->|"Circuit Breaker Tripped"| CircuitBreakerNotice -.-> HumanReview
+    end
+
+    subgraph S4["Stage 7: TDD Implementation & Parity Verification"]
         direction TB
         ParityVerifier["@runtime-parity-verifier<br/>(Golden Master & Parallel Run Shadowing)"]
         SideEffectShield["Test Double / Spy Safety Isolation<br/>(Mock External Side Effects)"]
         ASTGrinder["@ast-grinder & @msbuild<br/>(Syntax Modernization & OpenRewrite)"]
+        BrewerImpl["Handoff to bean-brewer<br/>(TDD Vertical Slice Implementation)"]
         
-        ReviewLoopCLI -->|"Approved Plan"| ParityVerifier & SideEffectShield --> ASTGrinder
+        HumanReview -->|"Approved Plan"| BrewerImpl & ASTGrinder
+        BrewerImpl --> ParityVerifier & SideEffectShield
     end
 
-    subgraph S4["Stage 4: Downstream Delivery & Telemetry Sync"]
+    subgraph S5["Stage 8 & 9: Delivery & Telemetry Mirroring"]
         direction TB
-        HumanGate["Stage 6 Human Review Gate (🛑 STOP)"]
-        HandoffBrewer["Handoff to bean-brewer<br/>(TDD Vertical Slice Implementation)"]
-        CupMirror["Telemetry Mirror to bean-cup<br/>(visual-dashboard.html Dual-Write)"]
+        Walkthrough["Stage 8: Visual & Terminal Proof<br/>(record & walkthrough.md)"]
+        PRDelivery["Stage 9: PR Delivery<br/>(worktree & github-workflow)"]
+        CupMirror["Telemetry Mirror to bean-cup<br/>(00_visual-dashboard.html Dual-Write)"]
         
-        ASTGrinder --> HumanGate --> HandoffBrewer
-        HumanGate -.-> CupMirror
+        ParityVerifier --> Walkthrough --> PRDelivery
+        HumanReview -.-> CupMirror
     end
 ```
 
@@ -329,14 +342,14 @@ flowchart TD
 | Script | Purpose | Key Flags & Options |
 | :--- | :--- | :--- |
 | **`scripts/digest_report.py`** | Dual-lens digest CLI synthesizing `codmod` reports with `graphify` AST graphs. | `--codmod <html_path>`<br/>`--graphify <dir_path>`<br/>`--plan-out <path>`<br/>`--matrix-out <path>`<br/>`--dashboard-out <path>` |
-| **`scripts/generate_dashboard.py`** | Responsive HTML modernization dashboard generator. | Supports 10 dedicated tabs, dark/light themes, inline search, embedded iframe & digest toggles, and UI artifact mirroring. |
-| **`scripts/review_loop.py`** | Multi-persona adversarial review engine. | `--plan <path>`<br/>`--reviews-dir <dir>`<br/>`--round <N>`<br/>`--threshold 90.0`<br/>`--max-rounds 3` |
+| **`scripts/generate_dashboard.py`** | Responsive HTML modernization dashboard generator. | Supports 11 dedicated tabs (including 🛡️ Adversarial Review), dark/light themes, inline search, embedded iframe & digest toggles, and UI artifact mirroring (`--review-matrix` supported). |
+| **`scripts/review_loop.py`** | Multi-persona adversarial review & hardening engine. | `--plan-dir <dir>`<br/>`--simulate-round <1\|2\|3>`<br/>`--ingest-review <path>`<br/>`--persona <exec\|engineer\|architect\|pm>`<br/>`--threshold 90.0`<br/>`--max-rounds 3` |
 
 ---
 
 ## 📊 The Unified Modernization Dashboard (`modernization_dashboard.html`)
 
-The interactive dashboard provides a responsive, single-pane-of-glass interface featuring 10 dedicated tabs:
+The interactive dashboard provides a responsive, single-pane-of-glass interface featuring 11 dedicated tabs:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -344,8 +357,10 @@ The interactive dashboard provides a responsive, single-pane-of-glass interface 
 ├───────────────┬───────────────┬───────────────┬───────────────┬──────────────────────────────────┤
 │ 📊 Scorecard  │ ⚡ Slices      │ ⚠️ Hubs       │ 🧩 Modules    │ 🏛️ 7 Rs Strategy                 │
 ├───────────────┼───────────────┼───────────────┼───────────────┼──────────────────────────────────┤
-│ ✂️ Seams      │ 🔄 Outbox CDC │ 📋 CodMod     │ 🕸️ Graphify   │ 🗺️ Migration Plan (05_PLAN.md)   │
-└───────────────┴───────────────┴───────────────┴───────────────┴──────────────────────────────────┘
+│ ✂️ Seams      │ 🔄 Outbox CDC │ 📋 CodMod     │ 🕸️ Graphify   │ 🛡️ Adversarial Review             │
+├───────────────┴───────────────┴───────────────┴───────────────┴──────────────────────────────────┤
+│ 🗺️ Migration Plan (05_PLAN.md with Hardening Audit Log)                                          │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 1. **📊 Executive Scorecard:** High-level metrics (Total Nodes, Dependency Edges, Central Hubs, Component Modules, Transformation Recipes, and Phased Roadmap).
@@ -357,7 +372,8 @@ The interactive dashboard provides a responsive, single-pane-of-glass interface 
 7. **🔄 Outbox & CDC Architecture:** State integrity specifications, prohibited anti-patterns (dual writes, 2PC), the formal 4-phase data cutover protocol, and the Mikado Method dependency DAG.
 8. **📋 Google Cloud CodMod Report:** View switcher toggling between the embedded full 3.9MB interactive report and a synthesized task digest.
 9. **🕸️ Graphify AST Visualizer:** View switcher toggling between the interactive Graphify AST network graph and the Markdown topology report.
-10. **🗺️ Migration Plan:** Embedded, interactive rendering of `05_PLAN.md`.
+10. **🛡️ Adversarial Review:** Interactive consensus scorecard, 4 stakeholder reviewer cards (`@reviewer-exec`, `@reviewer-engineer`, `@reviewer-architect`, `@reviewer-pm`), cross-functional trade-off resolutions (`@review-arbiter`), active flaw remediation directives, and multi-round convergence history.
+11. **🗺️ Migration Plan:** Embedded, interactive rendering of `05_PLAN.md` with auto-patched hardening audit section.
 
 ---
 
@@ -379,13 +395,30 @@ python3 scripts/digest_report.py \
   --dashboard-out plans/modernization/modernization_dashboard.html
 ```
 
-### 3. Run Adversarial Review Loop
+### 3. Run Adversarial Review Loop & Plan Hardening
 ```bash
+# Option A: Run via agy skill orchestrator:
 agy run adversarial-review --plan plans/modernization/05_PLAN.md
+
+# Option B: Run directly via CLI engine (ingest reviewer responses or simulate rounds):
+python3 scripts/review_loop.py \
+  --plan-dir plans/modernization/ \
+  --simulate-round 1 \
+  --threshold 90.0 \
+  --max-rounds 3
 ```
 
-### 4. Open Interactive Dashboard
+### 4. Regenerate & Open Interactive Dashboard
 ```bash
+# Regenerate dashboard with the review matrix:
+python3 scripts/generate_dashboard.py \
+  --matrix plans/modernization/migration_matrix.json \
+  --report /path/to/modernization_report.html \
+  --graph /path/to/graphify-out/graph.json \
+  --plan plans/modernization/05_PLAN.md \
+  --review-matrix plans/modernization/adversarial_review_matrix.json \
+  --output-dir plans/modernization/
+
 # Open locally in your browser:
 open plans/modernization/modernization_dashboard.html
 ```

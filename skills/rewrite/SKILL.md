@@ -26,6 +26,50 @@ An application rewrite leverages the repository's suite of specialized autonomou
 
 ---
 
+## 🧭 Application Rewrite Lifecycle Flowchart
+
+```mermaid
+flowchart TD
+    subgraph P1["Phase 1: Ingestion & Dual-Lens Digestion"]
+        Assess["assess skill<br/>(@codmod-assessor & @graphify-scout)"] --> Reports["modernization_report.html & graphify-out/"]
+        Reports --> Digest["scripts/digest_report.py & generate_dashboard.py"]
+        Digest --> BasePlan["05_PLAN.md, migration_matrix.json, modernization_dashboard.html"]
+    end
+
+    subgraph P2["Phase 2-4: Requirements, Extraction & Bounded Contexts"]
+        BasePlan --> PRD["write-prd skill: 02_PRD.md & Parity Scope"]
+        PRD --> Research["research skill: Blind Extraction & docs/glossary.md"]
+        Research --> ArchModel["domain-modeling: Bounded Contexts, ACLs & Seams"]
+        ArchModel --> Grill["grill skill: Socratic Stress-Testing"]
+    end
+
+    subgraph P5["Phase 5: Mikado Slicing & Vertical Decomposition"]
+        Grill --> Mikado["Mikado Method Dependency Graph"]
+        Mikado --> Slices["Vertical Slices 0-5 (Foundation to Observability)"]
+        Slices --> SlicePlan["Draft 05_PLAN.md with Mikado Slices"]
+    end
+
+    subgraph P55["Phase 5.5: Multi-Persona Adversarial Review Loop"]
+        SlicePlan --> Swarm["Dispatch Reviewer Swarm<br/>• @reviewer-exec (TCO & RPO)<br/>• @reviewer-engineer (AST & DX)<br/>• @reviewer-architect (Hubs & ACLs)<br/>• @reviewer-pm (Parity & Gherkin)"]
+        Swarm --> Arbiter["@review-arbiter Synthesis & Consensus Scoring<br/>(Score = 100 - (25C + 10H + 3M + 1L))"]
+        Arbiter --> ConvergenceCheck{"Score >= 90%<br/>& 0 Blockers?"}
+        ConvergenceCheck -->|No & Round < 3| PatchPlan["Auto-Patch 05_PLAN.md with Arbiter Directives"] --> Swarm
+        ConvergenceCheck -->|No & Round >= 3| CircuitBreak["Circuit Breaker Tripped<br/>Human Arbitration Required"]
+        ConvergenceCheck -->|Yes| RobustPlan["Certified Robust Plan & 05_ADVERSARIAL_REVIEW.md"]
+    end
+
+    subgraph P69["Phase 6-9: Execution, Parity Verification & Delivery"]
+        RobustPlan --> HumanGate["Stage 6 Human Review Gate (🛑 STOP)"]
+        CircuitBreak --> HumanGate
+        HumanGate -->|Approved| TDD["Stage 7: TDD Implementation (bean-brewer)"]
+        TDD --> Parity["@runtime-parity-verifier (Golden Master & Shadowing)"]
+        Parity --> Proof["Stage 8: Proof & Walkthrough (record skill)"]
+        Proof --> PR["Stage 9: PR Delivery (worktree & github-workflow)"]
+    end
+```
+
+---
+
 ## 🧭 Generic & Flexible Step-by-Step Protocol
 
 ### Step 1: Ingest Assessment Report & Architectural Dependencies (Dual-Lens Engine)
