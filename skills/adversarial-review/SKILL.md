@@ -1,6 +1,6 @@
 ---
 name: adversarial-review
-description: Stage 5.5 - Multi-persona adversarial review and hardening loop for modernization proposals. Coordinates @reviewer-exec, @reviewer-engineer, @reviewer-architect, @reviewer-pm, and @review-arbiter to critique and iterate on 05_PLAN.md until consensus is achieved.
+description: Multi-persona adversarial review and hardening loop for modernization proposals. Coordinates @reviewer-exec, @reviewer-engineer, @reviewer-architect, @reviewer-pm, and @review-arbiter to critique and iterate on 05_PLAN.md until consensus is achieved. Use this skill when reviewing, auditing, stress-testing, or hardening an application modernization plan before execution, or resolving trade-offs across executive, engineering, architectural, and product stakeholders.
 ---
 
 <!--
@@ -52,9 +52,9 @@ flowchart TD
         Report["modernization_report.html"]
     end
 
-    Inputs --> Dispatch["Dispatch 4 Adversarial Reviewers (Parallel)"]
+    Inputs --> Dispatch["Dispatch 4 Adversarial Reviewers (Parallel invoke_subagent)"]
 
-    subgraph Swarm["Stakeholder Reviewer Swarm"]
+    subgraph Swarm["Stakeholder Reviewer Swarm (TypeName: research)"]
         Exec["💼 @reviewer-exec<br/>• TCO & Cloud Spend<br/>• Rollback RPO/MTD<br/>• Licensing Sunsets"]
         Eng["💻 @reviewer-engineer<br/>• AST Safety & Reflection<br/>• Build Performance<br/>• Contract Test Fixtures"]
         Arch["🏛️ @reviewer-architect<br/>• Central Hub Blast Radius<br/>• Anti-Corruption Layers<br/>• Outbox CDC & Scalability"]
@@ -84,9 +84,40 @@ flowchart TD
 ```
 
 ### Step 1: Dispatch Adversarial Swarm
-Invoke subagents in parallel to review `05_PLAN.md`, `migration_matrix.json`, and `graphify-out/GRAPH_REPORT.md`:
-```bash
-# Each persona outputs findings in JSON or structured Markdown
+
+> [!IMPORTANT]
+> **Antigravity Native Dispatch:**
+> Use `TypeName: "research"` with explicit `Role`s to launch all four reviewers concurrently in isolated exploration sandboxes without context pollution:
+
+```json
+{
+  "Subagents": [
+    {
+      "TypeName": "research",
+      "Role": "Executive Reviewer",
+      "Prompt": "You are the Executive Reviewer (@reviewer-exec). Audit 05_PLAN.md against migration_matrix.json and business risk parameters.\n1. Scrutinize Total Cost of Ownership (TCO), parallel cloud infrastructure run-rates, enterprise licensing sunsets, and project timeline feasibility.\n2. Verify rollback strategies, Recovery Point Objective (RPO), and Maximum Tolerable Downtime (MTD).\n3. Flag any unmetered cloud spend or untracked commercial licenses.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Engineering Reviewer",
+      "Prompt": "You are the Engineering Reviewer (@reviewer-engineer). Audit 05_PLAN.md for code transformation and developer experience feasibility.\n1. Verify safety of AST migrations, automated codemods, dynamic reflection risks, and build system upgrades.\n2. Audit local development loops, test execution performance, and contract test fixtures.\n3. Flag any untestable vertical slices or brittle code modifications.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Architecture Reviewer",
+      "Prompt": "You are the Architecture Reviewer (@reviewer-architect). Audit 05_PLAN.md against graphify-out/GRAPH_REPORT.md and system dependencies.\n1. Audit Central Dependency Hubs to ensure high-blast-radius classes are protected by Anti-Corruption Layers (ACLs) or Facade isolation.\n2. Verify statefulness, distributed cache coherency, transactional outbox + CDC patterns, and zero-trust IAM boundaries.\n3. Flag any direct modifications to central hubs without modular isolation.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
+      "Model": "flash"
+    },
+    {
+      "TypeName": "research",
+      "Role": "Product Reviewer",
+      "Prompt": "You are the Product & Parity Reviewer (@reviewer-pm). Audit 05_PLAN.md for functional equivalence and scope control.\n1. Verify strict 1:1 functional and behavioral parity with legacy systems.\n2. Ensure undocumented legacy quirks, edge-case validation rules, and Gherkin acceptance criteria are preserved.\n3. Check scope discipline to prevent feature creep under the guise of modernization.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
+      "Model": "flash"
+    }
+  ]
+}
 ```
 
 ### Step 2: Ingest & Synthesize Round
@@ -109,5 +140,5 @@ Update the unified modernization dashboard to include the "🛡️ Adversarial R
 python3 scripts/generate_dashboard.py \
   --output-dir assessments/runs/timestamp/
 ```
-```
+
 Dual-write guarantees ensure `05_ADVERSARIAL_REVIEW.md` and `adversarial_review_matrix.json` mirror to the conversation artifacts directory.

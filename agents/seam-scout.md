@@ -2,12 +2,14 @@
 name: seam-scout
 description: Michael Feathers Seam Discovery & Decoupling Specialist. Maps Object, Link, and Preprocessor seams, identifies Sprout/Wrap intervention points, and evaluates Branch by Abstraction boundaries without modifying source code.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - find_by_name
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

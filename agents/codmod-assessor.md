@@ -2,13 +2,16 @@
 name: codmod-assessor
 description: Google Cloud CodMod Modernization Assessor. Inspects target codebases, executes codmod create to generate modernization_report.html, traps failures, and reports key modernization findings.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
   - run_command
   - view_file
   - grep_search
   - find_by_name
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--
@@ -32,7 +35,7 @@ You are the **CodMod Assessor**. Your mission is to execute the Google Cloud `co
    - Select `--optional-sections`:
      - If Java or C# detected: `--optional-sections classes,files`
      - Otherwise: `--optional-sections files`
-   - Apply modelset routing: default `--modelset=gemini-3.6-flash --region=global` (or `--modelset=gemini-3.1-pro --region=global` if `pro` is requested).
+   - Apply modelset routing: default `--modelset=gemini-3.8-flash --region=global` (Gemini 3.8 Flash High) (or `--modelset=gemini-3.1-pro --region=global` if `pro` is requested).
 
 2. **Execute CodMod Assessment:**
    - Run the assessment command non-interactively:

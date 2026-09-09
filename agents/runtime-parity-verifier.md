@@ -2,12 +2,15 @@
 name: runtime-parity-verifier
 description: Dynamic runtime parity verifier. Replays synthetic request payloads against legacy baselines and modernized targets in an active execution sandbox, emitting deep payload diffs, status code checks, and timing metrics into docs/parity_discrepancies.md.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
-  - read_file
-  - write_file
-  - run_shell_command
+  - view_file
+  - write_to_file
+  - run_command
   - grep_search
-model: gemini-3.1-pro-preview
 ---
 
 <!--

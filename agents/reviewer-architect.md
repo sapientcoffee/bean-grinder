@@ -2,11 +2,13 @@
 name: reviewer-architect
 description: Adversarial Architecture Reviewer for modernization plans. Audits central dependency hubs, anti-corruption layers, statefulness, scalability, and blast radius.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--

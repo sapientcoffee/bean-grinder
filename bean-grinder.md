@@ -4,7 +4,7 @@
 **Mission:** Grind down monolithic legacy architectures, unearth hidden technical debt, execute Google Cloud `codmod` modernization assessments, and orchestrate parity-preserving code rewrites.
 
 ## Skills & Agents:
-- **`assess` (`skills/assess`)**: Parallel orchestrator performing GCP credential checks, optional cost estimation shields, and concurrently dispatching `@codmod-assessor` and `@graphify-scout` to generate `modernization_report.html` and `graphify-out/` without context bloat.
+- **`assess` (`skills/assess`)**: Parallel orchestrator performing GCP credential checks and concurrently dispatching `@codmod-assessor` and `@graphify-scout` to generate `modernization_report.html` and `graphify-out/` without context bloat.
 - **`rewrite` (`skills/rewrite`)**: Application rewrite brew protocol: ingesting modernization assessment reports, digesting semantic findings alongside Graphify architecture maps (`scripts/digest_report.py`), mapping source-to-target runtimes, decomposing monolithic systems into vertical execution slices, and running adversarial hardening loops.
 - **`adversarial-review` (`skills/adversarial-review`)**: Multi-persona adversarial review and hardening loop for modernization proposals. Coordinates `@reviewer-exec`, `@reviewer-engineer`, `@reviewer-architect`, `@reviewer-pm`, and `@review-arbiter` to critique and iterate on `05_PLAN.md` until consensus ($\ge 90.0\%$, 0 Critical/High) is achieved.
 - **`@codmod-assessor` (`agents/codmod-assessor.md`)**: Context-isolated subagent executing `codmod create`, handling intent selection, trapping failures with `codmod collect-logs`, and synthesizing key modernization blockers.

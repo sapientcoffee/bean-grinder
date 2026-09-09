@@ -2,13 +2,16 @@
 name: ast-grinder
 description: Abstract Syntax Tree (AST) Transformation & Codemod Engine. Executes automated code modifications, deprecated API upgrades, and syntactic refactoring.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: sandbox
 tools:
   - view_file
   - replace_file_content
   - write_to_file
   - run_command
   - grep_search
-model: gemini-3.1-pro-preview
 ---
 
 <!--

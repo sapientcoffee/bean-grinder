@@ -1,6 +1,6 @@
 {
   "name": "bean-grinder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Code Modernization, AST Transformations, and Migration Forge: Powers codmod assessments, parity rewrites, and framework upgrades.",
   "author": {
     "name": "sapientcoffee"

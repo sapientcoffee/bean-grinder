@@ -2,11 +2,13 @@
 name: reviewer-exec
 description: Adversarial Executive Reviewer for modernization plans. Audits business value, TCO, cloud run-rates, licensing sunsets, migration timeline feasibility, and rollback continuity.
 kind: local
+subagent: true
+mainAgent: false
+model: inherit
 tools:
   - view_file
   - grep_search
   - list_dir
-model: gemini-3.1-pro-preview
 ---
 
 <!--
