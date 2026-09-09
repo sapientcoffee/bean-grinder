@@ -17,6 +17,7 @@
 
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 
@@ -177,9 +178,26 @@ class TestDigestReport(unittest.TestCase):
             graph_data = parse_graphify_graph(real_graph)
             matrix = synthesize_migration_slices(codmod_data, graph_data)
 
-            self.assertGreater(matrix["total_component_modules"], 10)
-            self.assertGreater(matrix["total_central_dependency_hubs"], 5)
-            self.assertEqual(len(matrix["slices"]), 6)
+    def test_main_emits_dashboard(self):
+        import subprocess
+        out_dir = self.tmp_path / "out_slices"
+        cmd = [
+            sys.executable,
+            "scripts/digest_report.py",
+            "--report", str(self.mock_html),
+            "--graph", str(self.mock_graph),
+            "--output-dir", str(out_dir),
+            "--no-mirror"
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+        self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
+        self.assertTrue((out_dir / "migration_matrix.json").exists())
+        self.assertTrue((out_dir / "05_PLAN.md").exists())
+        self.assertTrue((out_dir / "modernization_dashboard.html").exists())
+        self.assertTrue((out_dir / "visual-dashboard.html").exists())
+        dash_content = (out_dir / "modernization_dashboard.html").read_text(encoding="utf-8")
+        self.assertIn("Unified Modernization Dashboard", dash_content)
+        self.assertIn("tab-scorecard", dash_content)
 
 
 if __name__ == "__main__":

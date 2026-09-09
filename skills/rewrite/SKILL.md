@@ -32,10 +32,14 @@ An application rewrite leverages the repository's suite of specialized autonomou
 1. **Locate or Generate Assessment & Dependency Map:**
    - Look for a pre-generated assessment report (e.g., `modernization_report.html`, `petclinic-standard-report-3.6.html`, or a JSON metadata export). If none exists, run the `assess` skill using `codmod create` to generate one.
    - Run or locate **Graphify** codebase analysis (`graphify <path> --directed`). If `graphify-out/graph.json` exists, utilize it to map dependencies and subsystem boundaries.
-   - Run the automated digest tool to cross-reference recommendations with codebase architecture:
+   - Run the automated digest tool to cross-reference recommendations with codebase architecture and build the unified dashboard:
      ```bash
-     python3 scripts/digest_report.py --report <path-to-report.html> --graph <path-to-graphify-out/graph.json> --output-dir plans/<slug>/<timestamp>
+     python3 scripts/digest_report.py \
+       --report <path-to-report.html> \
+       --graph <path-to-graphify-out/graph.json> \
+       --output-dir plans/<slug>/<timestamp>
      ```
+     This automatically emits `modernization_dashboard.html`, `migration_matrix.json`, and `05_PLAN.md`, while mirroring `00_visual-dashboard.html` to conversation system artifacts for instant inspection.
 2. **Determine Source Stack & Target Runtime:**
    - Identify the source language and frameworks (e.g., legacy Java/Spring, .NET Framework / C#, C/C++, COBOL, mainframe, or modern monolith).
    - Identify the target modernized platform (e.g., Java 21/Spring Boot 3.x, .NET Core/8/9, Go, Node.js/TypeScript).

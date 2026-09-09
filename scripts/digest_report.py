@@ -450,6 +450,10 @@ def synthesize_migration_slices(
         "total_communities": len(modules),  # Backward-compatible alias
         "total_central_dependency_hubs": len(central_hubs),
         "total_god_nodes": len(central_hubs),  # Backward-compatible alias
+        "total_connections": graph_data.get("total_edges", 0),
+        "total_nodes": graph_data.get("total_nodes", 0),
+        "component_modules": modules,
+        "communities": modules,  # Backward-compatible alias
         "central_dependency_hubs": central_hubs,
         "god_nodes": central_hubs,  # Backward-compatible alias
         "slices": slices
@@ -558,12 +562,37 @@ def main():
         "--output-dir",
         type=Path,
         default=Path("./migration_slices"),
-        help="Target directory to emit migration_matrix.json and 05_PLAN.md."
+        help="Target directory to emit migration_matrix.json, 05_PLAN.md, and modernization_dashboard.html."
     )
     parser.add_argument(
         "--summary-only",
         action="store_true",
         help="Print summary scorecard to stdout without writing files."
+    )
+    parser.add_argument(
+        "--graph-html",
+        type=Path,
+        help="Path to graphify-out/graph.html for interactive visualizer embedding."
+    )
+    parser.add_argument(
+        "--graph-report",
+        type=Path,
+        help="Path to graphify-out/GRAPH_REPORT.md for topology breakdown embedding."
+    )
+    parser.add_argument(
+        "--no-dashboard",
+        action="store_true",
+        help="Disable automatic generation of modernization_dashboard.html."
+    )
+    parser.add_argument(
+        "--no-mirror",
+        action="store_true",
+        help="Disable dual-write brain mirroring to 00_visual-dashboard.html."
+    )
+    parser.add_argument(
+        "--brain-dir",
+        type=str,
+        help="Explicit conversation brain directory to mirror artifacts to."
     )
 
     args = parser.parse_args()
@@ -615,6 +644,39 @@ def main():
         with open(plan_path, "w", encoding="utf-8") as f:
             f.write(plan_md)
         print(f"✅ Emitted plan:   {plan_path}")
+
+        if not args.no_dashboard:
+            graph_html_path = args.graph_html
+            if not graph_html_path:
+                candidate_html = args.graph.parent / "graph.html"
+                if candidate_html.exists():
+                    graph_html_path = candidate_html
+
+            graph_report_path = args.graph_report
+            if not graph_report_path:
+                candidate_report = args.graph.parent / "GRAPH_REPORT.md"
+                if candidate_report.exists():
+                    graph_report_path = candidate_report
+            try:
+                from scripts.generate_dashboard import generate_modernization_dashboard
+            except ImportError:
+                try:
+                    from generate_dashboard import generate_modernization_dashboard
+                except ImportError:
+                    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                    from scripts.generate_dashboard import generate_modernization_dashboard
+            generate_modernization_dashboard(
+                matrix_data=matrix,
+                codmod_data=codmod_data,
+                graph_data=graph_data,
+                output_dir=args.output_dir,
+                codmod_report_path=args.report,
+                graph_html_path=graph_html_path,
+                graph_report_path=graph_report_path,
+                plan_path=plan_path,
+                brain_dir=args.brain_dir,
+                mirror=not args.no_mirror,
+            )
 
 
 if __name__ == "__main__":

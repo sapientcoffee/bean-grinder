@@ -133,18 +133,29 @@ To leverage the latest Gemini 3.x capabilities while avoiding Vertex AI regional
      *   **Central Dependency Hubs:** Core classes with the highest number of callers and dependencies, representing high blast radius.
      *   **Hidden Coupling:** Unexpected cross-subsystem dependencies that bridge across layer boundaries.
 
-2. **Automated Digestion Preparation:**
-   - The emitted `modernization_report.html` and `graphify-out/graph.json` are digested in Phase 2 / Stage 5 using:
+2. **Automated Digestion & Unified Modernization Dashboard:**
+   - The emitted `modernization_report.html` and `graphify-out/` are digested to synthesize dependency-ordered vertical slices and a single, unified modernization dashboard:
      ```bash
-     python3 scripts/digest_report.py --report modernization_report.html --graph graphify-out/graph.json --output-dir plans/<slug>/<timestamp>
+     python3 scripts/digest_report.py \
+       --report modernization_report.html \
+       --graph graphify-out/graph.json \
+       --graph-html graphify-out/graph.html \
+       --graph-report graphify-out/GRAPH_REPORT.md \
+       --output-dir plans/<slug>/<timestamp>
      ```
+   - This automatically produces:
+     * `plans/<slug>/<timestamp>/modernization_dashboard.html` (Unified multi-tab glass pane)
+     * `plans/<slug>/<timestamp>/migration_matrix.json` (Machine-readable dataset)
+     * `plans/<slug>/<timestamp>/05_PLAN.md` (Dependency-ordered implementation plan)
+     * `00_visual-dashboard.html` (Automatically mirrored to the active conversation brain for instant UI inspection)
 
 ---
 
 ## 7. Report Mirroring & Telemetry
 
 1. **Artifact Mirroring (Rule 5 compliance):**
-   - Upon successful generation of `modernization_report.html`, immediately copy/mirror this report into your active chat session's system artifacts directory as `08_visual-recap.html` (e.g. using `python3 scripts/manage_dashboard.py mirror --plan-dir "." --target-filename "08_visual-recap.html"` or copying to `<appDataDir>/brain/<conversation-id>/08_visual-recap.html`).
+   - The dashboard is automatically mirrored to `<appDataDir>/brain/<conversation-id>/00_visual-dashboard.html` by `digest_report.py`.
+   - If manual mirroring of the raw assessment report is required, copy `modernization_report.html` into your active chat session's system artifacts directory as `08_visual-recap.html` (e.g. copying to `<appDataDir>/brain/<conversation-id>/08_visual-recap.html`).
    - Include valid `ArtifactMetadata` so that the interactive HTML opens directly inside the side-panel chat panel.
 
 2. **Write Telemetry Logs:**
