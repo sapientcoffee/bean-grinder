@@ -13,7 +13,7 @@ This skill provides a generic orchestrator that walks through analyzing legacy a
 
 ## 🛠️ Unified Workspace Skills Mapping
 An application rewrite leverages the repository's suite of specialized autonomous barista swarm skills:
-1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to run codebase pre-scans, check active credentials, select `codmod` intents, and execute the remote assessment.
+1. **Assessment & Scanning (Phase 1):** Use the `assess` skill to orchestrate parallel subagents (`@codmod-assessor` and `@graphify-scout`) for concurrent semantic scanning and AST dependency mapping without context bloat.
 2. **Requirements & Discovery (Phase 2):** Use the `feature` / `write-prd` skill to initialize directories, draft `02_PRD.md`, and compile the master `visual-dashboard.html`.
 3. **Parity Extraction (Phase 3):** Use the `research` skill to do blind, factual extraction of legacy models, endpoints, and business rules to build `docs/glossary.md` and `docs/visual-glossary.html`.
 4. **Domain Architecture (Phase 4):** Use the `domain-modeling` skill to define target bounded contexts and architectural decisions.
@@ -28,17 +28,28 @@ An application rewrite leverages the repository's suite of specialized autonomou
 
 ## 🧭 Generic & Flexible Step-by-Step Protocol
 
-### Step 1: Ingest Assessment Report & Establish Baseline (Language-Agnostic)
-1. **Locate Assessment:** Look for a pre-generated assessment report (e.g., `modernization_report.html`, `petclinic-standard-report-3.6.html`, or a JSON metadata export). If none exists, run the `assess` skill using the `assess` command to generate one.
+### Step 1: Ingest Assessment Report & Architectural Dependencies (Dual-Lens Engine)
+1. **Locate or Generate Assessment & Dependency Map:**
+   - Look for pre-generated assessment artifacts (e.g., `modernization_report.html` and `graphify-out/graph.json`). If none exist, invoke the `assess` skill, which dispatches parallel subagents (`@codmod-assessor` and `@graphify-scout`) to generate both concurrently without context pollution.
+   - Run the automated digest tool to cross-reference recommendations with codebase architecture and build the unified dashboard:
+     ```bash
+     python3 scripts/digest_report.py \
+       --report <path-to-report.html> \
+       --graph <path-to-graphify-out/graph.json> \
+       --output-dir plans/<slug>/<timestamp>
+     ```
+     This automatically emits `modernization_dashboard.html`, `migration_matrix.json`, and `05_PLAN.md`, while mirroring `00_visual-dashboard.html` to conversation system artifacts for instant inspection.
 2. **Determine Source Stack & Target Runtime:**
    - Identify the source language and frameworks (e.g., legacy Java/Spring, .NET Framework / C#, C/C++, COBOL, mainframe, or modern monolith).
    - Identify the target modernized platform (e.g., Java 21/Spring Boot 3.x, .NET Core/8/9, Go, Node.js/TypeScript).
    - Identify the target compute environment (e.g., Cloud Run, Google Kubernetes Engine (GKE), App Engine) and data tier (e.g., Google Cloud SQL, Cloud Spanner, Cloud Memorystore).
-3. **Extract Metric Summaries:**
+3. **Extract Architectural Structure & Component Modules:**
    - Note codebase scale (Lines of Code (LOC) and file counts).
+   - Inspect the codebase breakdown for discovered **Component Modules** (functional subsystems like Repositories, Entities, Controllers) and **Central Dependency Hubs** (load-bearing classes that have the most incoming callers and outgoing dependencies, meaning high blast radius).
    - Map external dependencies, runtime frameworks, and build engines (e.g., Maven, Gradle, MSBuild, dotnet CLI, npm).
 4. **Identify Architectural Technical Debt & Strategic Drivers:**
-   - **Coupling & Cohesion:** Are business rules, data access, and UI tightly coupled? (e.g., database queries embedded directly within MVC/Web controllers or .aspx/Thymeleaf pages).
+   - **Coupling & Cohesion:** Are business rules, data access, and UI tightly coupled? Are there cross-subsystem dependency leaks?
+   - **Central Dependency Hubs:** Which core classes act as bottlenecks that require Anti-Corruption Layers (ACLs) or Facade isolation to prevent changes from rippling across the system?
    - **State & Scalability:** Is the application limited by single-node in-memory state or local sessions that prevent horizontal scalability?
    - **Security Posture:** Are there hardcoded secrets, plain-text connection strings, or unrestricted actuator/metrics endpoints?
    - **Concurrency & Performance:** Are blocking I/O calls limiting throughput? (e.g., synchronous database queries or single-threaded loops).
@@ -68,16 +79,18 @@ An application rewrite leverages the repository's suite of specialized autonomou
 4. **Conduct Socratic Grill:** Execute the `grill` / `grilling` skill to stress-test your design and ensure all edge cases are answered before writing code.
 
 ### Step 5: Decompose Monolith into Logical Vertical Slices (Stage 5 - Execution Plan)
-1. **Vertical Slicing Rules:** Do NOT plan a monolithic rewrite. Cut the application into logical, independent vertical slices.
+1. **Vertical Slicing Rules:** Do NOT plan a monolithic rewrite. Cut the application into logical, independent vertical slices sequenced by dependency order (foundation first, leaf models, core services, central hubs, then ingress controllers).
 2. **Draft the Slice-Based Execution Plan (`05_PLAN.md`):**
    - Establish physical contract signatures first.
    - Categorize tasks into `[Serial]` and parallelizable (`[Parallel]`) chunks.
-   - **Generalized Slicing Pattern:**
-     - **Slice 0 (Common Foundation & Infrastructure):** Target build system configuration, runtime properties, schema migrations, shared entity models/base structures, and cloud secret integrations.
-     - **Slice 1 (Low-Dependency Domain Lookup Services):** Read-only lookups or simple lookup subdomains (e.g., metadata, specialties, taxonomies). Serves to validate pipeline compilation, data access, and routing.
-     - **Slice 2 (Core Transactional Subdomains):** Main domain services handling state mutations, validation rules, and heavy transactions.
-     - **Slice 3 (Cross-Cutting Concerns & Security):** Centralized error handling, internationalization, logging filters, authentication/authorization layers, and metrics/actuator monitoring.
-     - **Slice 4 (Scalability & Decoupled Integrations):** Distributed session handling, external caches, connection pooling adjustments, or decoupled UI (Single Page Application) integrations.
+   - Leverage `scripts/digest_report.py` to auto-generate the preliminary `05_PLAN.md` and `migration_matrix.json`.
+   - **Dependency-Ordered Slicing Pattern:**
+     - **Slice 0 (Common Foundation & Infrastructure):** Target build system configuration (JDK 21, .NET 9), runtime properties, compiler plugins, schema migrations, and CI wrappers.
+     - **Slice 1 (Standalone Leaf Modules & Lookup Models):** Low-coupling modules with minimal external dependencies (e.g., lookups, dictionary models, enums). Serves to validate pipeline compilation, data access, and routing.
+     - **Slice 2 (Core Domain Repositories & Data Layer):** Main domain services and repositories handling state mutations, validation rules, and heavy transactions. Apply `codmod`'s data layer recommendations (e.g., `javax.*` to `jakarta.*`).
+     - **Slice 3 (Central Dependency Hubs & Monolith Decoupling):** High-blast-radius core classes with the most incoming callers and outgoing dependencies. Encapsulate with Anti-Corruption Layers (ACLs) or Facade interfaces to isolate changes.
+     - **Slice 4 (Ingress Controllers & Edge Adapters):** MVC controllers, REST endpoints, request formatters, and web templates.
+     - **Slice 5 (Target Cloud Hardening & Observability):** Cloud Run configuration, Cloud SQL pooling, GCP Secret Manager, health probes, and OpenTelemetry exporters.
 3. **Generate Kanban Visuals:** Use the `kanban` skill to generate an interactive board and Mermaid diagram to map slices and track progress. Mirror `05_PLAN.md` to system artifacts.
 
 ### Step 6: Human Gate & Execution (Stages 6 to 9)
