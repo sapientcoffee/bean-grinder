@@ -793,31 +793,82 @@ def main():
     print("=" * 60 + "\n")
 
     if not args.summary_only:
-        args.output_dir.mkdir(parents=True, exist_ok=True)
-        matrix_path = args.output_dir / "migration_matrix.json"
-        plan_path = args.output_dir / "05_PLAN.md"
+        try:
+            from scripts.run_manager import RunManager, STAGE_DIRS
+        except ImportError:
+            try:
+                from run_manager import RunManager, STAGE_DIRS
+            except ImportError:
+                sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+                from scripts.run_manager import RunManager, STAGE_DIRS
 
+        args.output_dir.mkdir(parents=True, exist_ok=True)
+        for s_name in STAGE_DIRS.values():
+            (args.output_dir / s_name).mkdir(parents=True, exist_ok=True)
+
+        graph_html_path = args.graph_html
+        if not graph_html_path:
+            candidate_html = args.graph.parent / "graph.html"
+            if candidate_html.exists():
+                graph_html_path = candidate_html
+
+        graph_report_path = args.graph_report
+        if not graph_report_path:
+            candidate_report = args.graph.parent / "GRAPH_REPORT.md"
+            if candidate_report.exists():
+                graph_report_path = candidate_report
+
+        # Stage discovery artifacts with clear, human-friendly names
+        base_dir = args.output_dir.parent.parent if args.output_dir.parent.name == "runs" else args.output_dir.parent
+        run_mgr = RunManager(base_dir=base_dir)
+        run_mgr.scaffold_run(custom_run_dir=args.output_dir, app_name=matrix.get("application_title", "application"))
+        destinations = run_mgr.organize_discovery_artifacts(
+            run_dir=args.output_dir,
+            codmod_report_path=args.report,
+            graph_json_path=args.graph,
+            graph_html_path=graph_html_path,
+            graph_report_path=graph_report_path,
+        )
+
+        effective_report = destinations.get("codmod_report", args.report)
+        effective_graph_html = destinations.get("graph_html", graph_html_path)
+        effective_graph_report = destinations.get("graph_report", graph_report_path)
+
+        # Stage 2: Synthesis artifacts
+        matrix_path = args.output_dir / "migration_matrix.json"
+        stage_matrix_path = args.output_dir / STAGE_DIRS["stage2_synthesis"] / "migration_matrix.json"
         with open(matrix_path, "w", encoding="utf-8") as f:
             json.dump(matrix, f, indent=2, ensure_ascii=False)
-        print(f"✅ Emitted matrix: {matrix_path}")
+        with open(stage_matrix_path, "w", encoding="utf-8") as f:
+            json.dump(matrix, f, indent=2, ensure_ascii=False)
+        print(f"✅ Emitted matrix: {stage_matrix_path}")
 
+        slices_path = args.output_dir / STAGE_DIRS["stage2_synthesis"] / "vertical_slices.json"
+        with open(slices_path, "w", encoding="utf-8") as f:
+            json.dump(matrix.get("slices", []), f, indent=2, ensure_ascii=False)
+
+        # Stage 4: Migration plan
+        plan_path = args.output_dir / "05_PLAN.md"
+        stage_plan_path = args.output_dir / STAGE_DIRS["stage4_migration_plan"] / "05_PLAN.md"
         plan_md = generate_plan_markdown(matrix, plan_path)
         with open(plan_path, "w", encoding="utf-8") as f:
             f.write(plan_md)
-        print(f"✅ Emitted plan:   {plan_path}")
+        with open(stage_plan_path, "w", encoding="utf-8") as f:
+            f.write(plan_md)
+        print(f"✅ Emitted plan:   {stage_plan_path}")
+
+        # Update run manifest
+        run_mgr.update_manifest(
+            args.output_dir,
+            status="SYNTHESIS_COMPLETE",
+            scorecard={
+                "component_modules": total_mods,
+                "central_dependency_hubs": total_hubs,
+                "slices": len(matrix.get("slices", [])),
+            }
+        )
 
         if not args.no_dashboard:
-            graph_html_path = args.graph_html
-            if not graph_html_path:
-                candidate_html = args.graph.parent / "graph.html"
-                if candidate_html.exists():
-                    graph_html_path = candidate_html
-
-            graph_report_path = args.graph_report
-            if not graph_report_path:
-                candidate_report = args.graph.parent / "GRAPH_REPORT.md"
-                if candidate_report.exists():
-                    graph_report_path = candidate_report
             try:
                 from scripts.generate_dashboard import generate_modernization_dashboard
             except ImportError:
@@ -831,10 +882,10 @@ def main():
                 codmod_data=codmod_data,
                 graph_data=graph_data,
                 output_dir=args.output_dir,
-                codmod_report_path=args.report,
-                graph_html_path=graph_html_path,
-                graph_report_path=graph_report_path,
-                plan_path=plan_path,
+                codmod_report_path=effective_report,
+                graph_html_path=effective_graph_html,
+                graph_report_path=effective_graph_report,
+                plan_path=stage_plan_path,
                 brain_dir=args.brain_dir,
                 mirror=not args.no_mirror,
             )

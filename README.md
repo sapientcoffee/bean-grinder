@@ -389,42 +389,64 @@ The interactive dashboard provides a responsive, single-pane-of-glass interface 
 agy run assess --estimate-cost
 ```
 
-### 2. Synthesize Reports into Migration Plan & Dashboard
+### 2. Synthesize Reports into Unified Stage Directory & Dashboard
 ```bash
 python3 scripts/digest_report.py \
-  --codmod /path/to/modernization_report.html \
-  --graphify /path/to/graphify-out \
-  --plan-out plans/modernization/05_PLAN.md \
-  --matrix-out plans/modernization/migration_matrix.json \
-  --dashboard-out plans/modernization/modernization_dashboard.html
+  --report /path/to/modernization_report.html \
+  --graph /path/to/graphify-out/graph.json \
+  --output-dir assessments/runs/$(date +%Y%m%d_%H%M%S)
+```
+
+This automatically organizes discovery artifacts, creates stage folders, emits `index.html` at the run root, and updates the `assessments/` hub:
+
+```
+assessments/
+├── index.html                     # 🚀 Multi-run hub with sticky run-switcher bar
+├── latest -> runs/20260909_140000/ # Instant pointer to most recent run
+└── runs/
+    └── 20260909_140000/
+        ├── index.html             # 🖥️ Main interactive 11-tab dashboard
+        ├── run_manifest.json      # 📋 Run metadata, stage status, and executive scorecard
+        ├── 01_discovery/          # 🔍 Stage 1: Cleanly staged discovery artifacts
+        │   ├── codmod_assessment_report.html
+        │   ├── graphify_ast_graph.json
+        │   ├── graphify_visualizer.html
+        │   ├── graphify_architecture_report.md
+        │   └── codmod_execution_telemetry.json
+        ├── 02_synthesis/          # 🧩 Stage 2: Slices & rationalization matrices
+        │   ├── migration_matrix.json
+        │   └── vertical_slices.json
+        ├── 03_adversarial_review/ # 🛡️ Stage 3: Multi-persona audit findings & matrices
+        │   ├── adversarial_audit_report.md
+        │   ├── adversarial_review_matrix.json
+        │   └── plan_hardening_directives.json
+        ├── 04_migration_plan/     # 📐 Stage 4: Mikado dependency-ordered plan & contracts
+        │   ├── 05_PLAN.md
+        │   └── contracts/
+        └── 05_parity_verification/ # ⚖️ Stage 5: Traffic replay discrepancies & fixtures
+            └── parity_discrepancies.md
 ```
 
 ### 3. Run Adversarial Review Loop & Plan Hardening
 ```bash
 # Option A: Run via agy skill orchestrator:
-agy run adversarial-review --plan plans/modernization/05_PLAN.md
+agy run adversarial-review --plan assessments/runs/<timestamp>/04_migration_plan/05_PLAN.md
 
 # Option B: Run directly via CLI engine (ingest reviewer responses or simulate rounds):
 python3 scripts/review_loop.py \
-  --plan-dir plans/modernization/ \
+  --plan-dir assessments/runs/<timestamp>/ \
   --simulate-round 1 \
   --threshold 90.0 \
   --max-rounds 3
 ```
 
-### 4. Regenerate & Open Interactive Dashboard
+### 4. Open Interactive Dashboard & Navigate Runs
 ```bash
-# Regenerate dashboard with the review matrix:
-python3 scripts/generate_dashboard.py \
-  --matrix plans/modernization/migration_matrix.json \
-  --report /path/to/modernization_report.html \
-  --graph /path/to/graphify-out/graph.json \
-  --plan plans/modernization/05_PLAN.md \
-  --review-matrix plans/modernization/adversarial_review_matrix.json \
-  --output-dir plans/modernization/
+# Open root assessment hub across all runs:
+open assessments/index.html
 
-# Open locally in your browser:
-open plans/modernization/modernization_dashboard.html
+# Or open the specific run's main HTML view directly:
+open assessments/runs/<timestamp>/index.html
 ```
 
 ---

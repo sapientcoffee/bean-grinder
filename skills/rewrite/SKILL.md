@@ -80,9 +80,9 @@ flowchart TD
      python3 scripts/digest_report.py \
        --report <path-to-report.html> \
        --graph <path-to-graphify-out/graph.json> \
-       --output-dir plans/<slug>/<timestamp>
+       --output-dir assessments/runs/$(date +%Y%m%d_%H%M%S)
      ```
-     This automatically emits `modernization_dashboard.html`, `migration_matrix.json`, and `05_PLAN.md`, while mirroring `00_visual-dashboard.html` to conversation system artifacts for instant inspection.
+     This automatically organizes artifacts into `01_discovery/`, `02_synthesis/`, and `04_migration_plan/`, emitting `index.html` at the run root (with backward-compatible `modernization_dashboard.html`), while updating `assessments/index.html` and mirroring `00_visual-dashboard.html` to conversation system artifacts for instant inspection.
 2. **Determine Source Stack & Target Runtime:**
    - Identify the source language and frameworks (e.g., legacy Java/Spring, .NET Framework / C#, C/C++, COBOL, mainframe, or modern monolith).
    - Identify the target modernized platform (e.g., Java 21/Spring Boot 3.x, .NET Core/8/9, Go, Node.js/TypeScript).

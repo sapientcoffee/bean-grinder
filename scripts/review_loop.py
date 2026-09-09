@@ -619,9 +619,22 @@ def main():
     plan_dir = Path(args.plan_dir)
     plan_dir.mkdir(parents=True, exist_ok=True)
 
+    rev_stage_dir = plan_dir / "03_adversarial_review"
+    plan_stage_dir = plan_dir / "04_migration_plan"
+    rev_stage_dir.mkdir(parents=True, exist_ok=True)
+
+    # Locate matrix file (check stage dir first, then root)
     matrix_file = plan_dir / "adversarial_review_matrix.json"
+    if (rev_stage_dir / "adversarial_review_matrix.json").exists():
+        matrix_file = rev_stage_dir / "adversarial_review_matrix.json"
+
+    # Locate plan file (check stage dir first, then root)
     plan_file = plan_dir / "05_PLAN.md"
+    if (plan_stage_dir / "05_PLAN.md").exists():
+        plan_file = plan_stage_dir / "05_PLAN.md"
+
     review_report_file = plan_dir / "05_ADVERSARIAL_REVIEW.md"
+    stage_report_file = rev_stage_dir / "adversarial_audit_report.md"
 
     # Load or initialize matrix
     if matrix_file.exists():
@@ -656,20 +669,44 @@ def main():
         matrix["is_converged"] = (round_data["verdict"] == "CONVERGED_ROBUST")
         matrix["circuit_breaker_tripped"] = (round_data["verdict"] == "CIRCUIT_BREAKER_TRIGGERED")
 
-        # Write matrix json
-        with open(matrix_file, "w", encoding="utf-8") as f:
+        # Write matrix json to stage and root
+        with open(rev_stage_dir / "adversarial_review_matrix.json", "w", encoding="utf-8") as f:
+            json.dump(matrix, f, indent=2)
+        with open(plan_dir / "adversarial_review_matrix.json", "w", encoding="utf-8") as f:
             json.dump(matrix, f, indent=2)
 
-        # Generate markdown report
+        # Write plan directives
+        directives = round_data.get("directives", [])
+        with open(rev_stage_dir / "plan_hardening_directives.json", "w", encoding="utf-8") as f:
+            json.dump({"round": round_num, "directives": directives}, f, indent=2)
+
+        # Generate markdown report in stage and root
         md_content = generate_adversarial_review_md(matrix)
+        stage_report_file.write_text(md_content, encoding="utf-8")
         review_report_file.write_text(md_content, encoding="utf-8")
 
-        # Patch plan
-        patch_plan_hardening_log(plan_file, round_data)
+        # Patch plan in stage and root if present
+        if (plan_stage_dir / "05_PLAN.md").exists():
+            patch_plan_hardening_log(plan_stage_dir / "05_PLAN.md", round_data)
+        if (plan_dir / "05_PLAN.md").exists() and (plan_stage_dir / "05_PLAN.md") != (plan_dir / "05_PLAN.md"):
+            patch_plan_hardening_log(plan_dir / "05_PLAN.md", round_data)
+
+        # Update manifest if run_manifest.json exists
+        try:
+            from scripts.run_manager import RunManager
+            mgr = RunManager(base_dir=plan_dir.parent.parent if plan_dir.parent.name == "runs" else plan_dir.parent)
+            mgr.update_manifest(
+                plan_dir,
+                status="REVIEW_CONVERGED" if matrix["is_converged"] else "IN_REVIEW",
+                review_verdict=round_data["verdict"],
+                consensus_score=round_data["consensus_score"],
+            )
+        except Exception:
+            pass
 
         print(f"✅ Round {round_num} evaluated: Verdict = {round_data['verdict']}, Score = {round_data['consensus_score']}%")
-        print(f"   Matrix: {matrix_file}")
-        print(f"   Report: {review_report_file}")
+        print(f"   Matrix: {rev_stage_dir / 'adversarial_review_matrix.json'}")
+        print(f"   Report: {stage_report_file}")
         return
 
     # Ingestion Mode

@@ -90,9 +90,9 @@ Invoke subagents in parallel to review `05_PLAN.md`, `migration_matrix.json`, an
 ```
 
 ### Step 2: Ingest & Synthesize Round
-Run the review engine to calculate scores, reconcile trade-offs, and emit reports:
+Run the review engine to calculate scores, reconcile trade-offs, and emit reports into `03_adversarial_review/`:
 ```bash
-python3 scripts/review_loop.py --plan-dir plans/modernization/timestamp/
+python3 scripts/review_loop.py --plan-dir assessments/runs/timestamp/
 ```
 
 ### Step 3: Check Convergence Criteria
@@ -107,11 +107,7 @@ python3 scripts/review_loop.py --plan-dir plans/modernization/timestamp/
 Update the unified modernization dashboard to include the "🛡️ Adversarial Review" tab:
 ```bash
 python3 scripts/generate_dashboard.py \
-  --matrix plans/modernization/timestamp/migration_matrix.json \
-  --report plans/modernization/timestamp/modernization_report.html \
-  --graph graphify-out/graph.json \
-  --plan plans/modernization/timestamp/05_PLAN.md \
-  --review-matrix plans/modernization/timestamp/adversarial_review_matrix.json \
-  --output-dir plans/modernization/timestamp/
+  --output-dir assessments/runs/timestamp/
+```
 ```
 Dual-write guarantees ensure `05_ADVERSARIAL_REVIEW.md` and `adversarial_review_matrix.json` mirror to the conversation artifacts directory.

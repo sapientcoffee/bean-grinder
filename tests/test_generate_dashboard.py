@@ -190,6 +190,7 @@ class TestGenerateDashboard(unittest.TestCase):
 
             self.assertTrue(dash_file.exists())
             self.assertEqual(dash_file.name, "modernization_dashboard.html")
+            self.assertTrue((out_dir / "index.html").exists())
             compat_file = out_dir / "visual-dashboard.html"
             self.assertTrue(compat_file.exists())
             self.assertGreater(dash_file.stat().st_size, 5000)

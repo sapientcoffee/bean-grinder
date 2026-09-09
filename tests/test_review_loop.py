@@ -234,6 +234,35 @@ Remediation: Parallelize slice tests.
             plan_text_3 = plan_file.read_text(encoding="utf-8")
             self.assertIn("CONVERGED_ROBUST", plan_text_3)
 
+    def test_cli_simulate_with_stage_directories(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plan_dir = Path(tmpdir)
+            stage4 = plan_dir / "04_migration_plan"
+            stage4.mkdir(parents=True)
+            plan_file = stage4 / "05_PLAN.md"
+            plan_file.write_text("# Migration Plan\n\nContent here.\n", encoding="utf-8")
+
+            cmd = [
+                sys.executable,
+                "scripts/review_loop.py",
+                "--plan-dir", str(plan_dir),
+                "--simulate-round", "1"
+            ]
+            res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+            self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
+
+            # Verify artifacts in 03_adversarial_review/
+            stage3 = plan_dir / "03_adversarial_review"
+            self.assertTrue((stage3 / "adversarial_review_matrix.json").exists())
+            self.assertTrue((stage3 / "adversarial_audit_report.md").exists())
+            self.assertTrue((stage3 / "plan_hardening_directives.json").exists())
+
+            # Verify plan in 04_migration_plan was patched
+            patched_content = plan_file.read_text(encoding="utf-8")
+            self.assertIn("🛡️ Adversarial Review & Hardening Audit", patched_content)
+
 
 if __name__ == "__main__":
     unittest.main()
+

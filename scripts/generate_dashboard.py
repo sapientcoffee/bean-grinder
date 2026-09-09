@@ -1840,19 +1840,23 @@ def generate_modernization_dashboard(
 
     # Auto-load adversarial review matrix if not explicitly passed
     if review_matrix_data is None:
-        rev_file = output_dir / "adversarial_review_matrix.json"
-        if rev_file.exists():
-            try:
-                with open(rev_file, "r", encoding="utf-8") as f:
-                    review_matrix_data = json.load(f)
-            except Exception:
-                pass
-        elif plan_path and (plan_path.parent / "adversarial_review_matrix.json").exists():
-            try:
-                with open(plan_path.parent / "adversarial_review_matrix.json", "r", encoding="utf-8") as f:
-                    review_matrix_data = json.load(f)
-            except Exception:
-                pass
+        rev_candidates = [
+            output_dir / "03_adversarial_review" / "adversarial_review_matrix.json",
+            output_dir / "adversarial_review_matrix.json",
+        ]
+        if plan_path:
+            rev_candidates.extend([
+                plan_path.parent / "03_adversarial_review" / "adversarial_review_matrix.json",
+                plan_path.parent / "adversarial_review_matrix.json",
+            ])
+        for cand in rev_candidates:
+            if cand.exists():
+                try:
+                    with open(cand, "r", encoding="utf-8") as f:
+                        review_matrix_data = json.load(f)
+                    break
+                except Exception:
+                    pass
 
     codmod_rel_url = None
     codmod_file_url = None
@@ -1862,6 +1866,10 @@ def generate_modernization_dashboard(
         except ValueError:
             codmod_rel_url = codmod_report_path.name
         codmod_file_url = codmod_report_path.resolve().as_uri()
+    elif (output_dir / "01_discovery" / "codmod_assessment_report.html").exists():
+        disc_codmod = output_dir / "01_discovery" / "codmod_assessment_report.html"
+        codmod_rel_url = "01_discovery/codmod_assessment_report.html"
+        codmod_file_url = disc_codmod.resolve().as_uri()
 
     graph_rel_url = None
     graph_file_url = None
@@ -1871,14 +1879,24 @@ def generate_modernization_dashboard(
         except ValueError:
             graph_rel_url = graph_html_path.name
         graph_file_url = graph_html_path.resolve().as_uri()
+    elif (output_dir / "01_discovery" / "graphify_visualizer.html").exists():
+        disc_graph = output_dir / "01_discovery" / "graphify_visualizer.html"
+        graph_rel_url = "01_discovery/graphify_visualizer.html"
+        graph_file_url = disc_graph.resolve().as_uri()
 
     graph_report_content = None
     if graph_report_path and graph_report_path.exists():
         graph_report_content = graph_report_path.read_text(encoding="utf-8", errors="replace")
+    elif (output_dir / "01_discovery" / "graphify_architecture_report.md").exists():
+        graph_report_content = (output_dir / "01_discovery" / "graphify_architecture_report.md").read_text(encoding="utf-8", errors="replace")
 
     plan_content = None
     if plan_path and plan_path.exists():
         plan_content = plan_path.read_text(encoding="utf-8", errors="replace")
+    elif (output_dir / "04_migration_plan" / "05_PLAN.md").exists():
+        plan_content = (output_dir / "04_migration_plan" / "05_PLAN.md").read_text(encoding="utf-8", errors="replace")
+    elif (output_dir / "05_PLAN.md").exists():
+        plan_content = (output_dir / "05_PLAN.md").read_text(encoding="utf-8", errors="replace")
 
     html_content = build_dashboard_html(
         matrix_data=matrix_data,
@@ -1893,34 +1911,83 @@ def generate_modernization_dashboard(
         review_matrix_data=review_matrix_data,
     )
 
-    dashboard_path.write_text(html_content, encoding="utf-8")
-    print(f"✅ Emitted dashboard: {dashboard_path} ({len(html_content):,} bytes)")
+    # 1. Primary main index at root of directory
+    index_path = output_dir / "index.html"
+    index_path.write_text(html_content, encoding="utf-8")
+    print(f"✅ Emitted main index:     {index_path} ({len(html_content):,} bytes)")
 
+    # 2. Modernization dashboard alias for backwards compatibility
+    dashboard_path.write_text(html_content, encoding="utf-8")
+    print(f"✅ Emitted dashboard:      {dashboard_path} ({len(html_content):,} bytes)")
+
+    # 3. visual-dashboard.html alias for backward compatibility
     compat_path = output_dir / "visual-dashboard.html"
     compat_path.write_text(html_content, encoding="utf-8")
 
+    # If inside a multi-run structure (e.g. assessments/runs/<run_id>), refresh root index
+    try:
+        from scripts.run_manager import RunManager
+    except ImportError:
+        try:
+            from run_manager import RunManager
+        except ImportError:
+            RunManager = None
+
+    if RunManager and output_dir.parent.name == "runs":
+        try:
+            base_dir = output_dir.parent.parent
+            mgr = RunManager(base_dir=base_dir)
+            mgr.update_root_index(active_run_dir=output_dir)
+            print(f"🔄 Refreshed root index:   {base_dir / 'index.html'}")
+        except Exception as e:
+            print(f"⚠️ Could not refresh root index: {e}")
+
     if mirror:
         aux_files = []
-        matrix_file = output_dir / "migration_matrix.json"
-        if matrix_file.exists():
-            aux_files.append((matrix_file, "migration_matrix.json"))
+        matrix_candidates = [
+            output_dir / "02_synthesis" / "migration_matrix.json",
+            output_dir / "migration_matrix.json",
+        ]
+        for mc in matrix_candidates:
+            if mc.exists():
+                aux_files.append((mc, "migration_matrix.json"))
+                break
+
+        plan_candidates = [
+            output_dir / "04_migration_plan" / "05_PLAN.md",
+            output_dir / "05_PLAN.md",
+        ]
         if plan_path and plan_path.exists():
-            aux_files.append((plan_path, "05_plan.md"))
+            plan_candidates.insert(0, plan_path)
+        for pc in plan_candidates:
+            if pc.exists():
+                aux_files.append((pc, "05_plan.md"))
+                break
 
-        rev_matrix_file = output_dir / "adversarial_review_matrix.json"
-        if not rev_matrix_file.exists() and plan_path:
-            rev_matrix_file = plan_path.parent / "adversarial_review_matrix.json"
-        if rev_matrix_file.exists():
-            aux_files.append((rev_matrix_file, "adversarial_review_matrix.json"))
+        rev_matrix_candidates = [
+            output_dir / "03_adversarial_review" / "adversarial_review_matrix.json",
+            output_dir / "adversarial_review_matrix.json",
+        ]
+        if plan_path:
+            rev_matrix_candidates.append(plan_path.parent / "adversarial_review_matrix.json")
+        for rmc in rev_matrix_candidates:
+            if rmc.exists():
+                aux_files.append((rmc, "adversarial_review_matrix.json"))
+                break
 
-        rev_report_file = output_dir / "05_ADVERSARIAL_REVIEW.md"
-        if not rev_report_file.exists() and plan_path:
-            rev_report_file = plan_path.parent / "05_ADVERSARIAL_REVIEW.md"
-        if rev_report_file.exists():
-            aux_files.append((rev_report_file, "05_adversarial_review.md"))
+        rev_report_candidates = [
+            output_dir / "03_adversarial_review" / "adversarial_audit_report.md",
+            output_dir / "05_ADVERSARIAL_REVIEW.md",
+        ]
+        if plan_path:
+            rev_report_candidates.append(plan_path.parent / "05_ADVERSARIAL_REVIEW.md")
+        for rrc in rev_report_candidates:
+            if rrc.exists():
+                aux_files.append((rrc, "05_adversarial_review.md"))
+                break
 
         mirrored = mirror_dashboard(
-            dashboard_path=dashboard_path,
+            dashboard_path=index_path,
             target_filename="00_visual-dashboard.html",
             brain_dir=brain_dir,
             aux_files=aux_files,

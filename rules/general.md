@@ -21,8 +21,15 @@ Welcome to **Bean-Grinder**, the automated code modernization and migration engi
   - Convergence is achieved ONLY when consensus score $\ge 90.0\%$ and zero Critical or High severity blockers remain.
   - If consensus is not reached within 3 rounds, the circuit breaker trips, freezing the plan and documenting the deadlock for human decision-making.
 
-## 3. Dashboard Lifecycle & Dual-Write Mirroring
-* **11-Tab Unified Modernization Dashboard:** Every modernization plan must generate or update `modernization_dashboard.html` containing all 11 tabs (Scorecard, Slices, Hubs, Modules, 7 Rs Strategy, Seams, Outbox CDC, CodMod, Graphify, Adversarial Review, and Migration Plan).
-* **Dual-Write Guarantee:** Always mirror `modernization_dashboard.html` to `00_visual-dashboard.html` in the conversation system artifacts directory (`~/.gemini/antigravity/brain/<conversation-id>/`) so it renders immediately in the UI artifact viewer.
+## 3. Unified Directory Structure & Dashboard Lifecycle
+* **Independent Single Directory (`assessments/`):** All assessment runs and modernization artifacts are self-contained within `assessments/runs/<run_id>/`, with `assessments/index.html` and `assessments/latest` providing root-level entry and navigation.
+* **Human-Friendly Stage Organization:** Artifacts within each run are organized into clear stage directories:
+  - `01_discovery/`: `codmod_assessment_report.html`, `graphify_ast_graph.json`, `graphify_visualizer.html`, `graphify_architecture_report.md`, `codmod_execution_telemetry.json`
+  - `02_synthesis/`: `migration_matrix.json`, `vertical_slices.json`, `mikado_dependency_tree.md`
+  - `03_adversarial_review/`: `adversarial_audit_report.md`, `adversarial_review_matrix.json`, `plan_hardening_directives.json`
+  - `04_migration_plan/`: `05_PLAN.md`, `contracts/`
+  - `05_parity_verification/`: `parity_discrepancies.md`, `golden_master_fixtures/`
+* **Main HTML View at Root:** Every run produces `index.html` at the run root (with backward-compatible `modernization_dashboard.html` and `visual-dashboard.html` aliases), containing all 11 tabs. The root `assessments/index.html` serves as the run hub with an interactive switcher.
+* **Dual-Write Guarantee:** Always mirror the main dashboard to `00_visual-dashboard.html` in the conversation system artifacts directory (`~/.gemini/antigravity/brain/<conversation-id>/`) so it renders immediately in the UI artifact viewer.
 
 

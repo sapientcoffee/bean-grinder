@@ -116,12 +116,24 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
      python3 scripts/digest_report.py \
        --report modernization_report.html \
        --graph graphify-out/graph.json \
-       --output-dir plans/<slug>/<timestamp>
+       --output-dir assessments/runs/$(date +%Y%m%d_%H%M%S)
      ```
-   - This automatically produces:
-     * `plans/<slug>/<timestamp>/modernization_dashboard.html` (Unified multi-tab glass pane including 7 Rs Strategy, Seams, Data CDC, and Mikado Graph)
-     * `plans/<slug>/<timestamp>/migration_matrix.json` (Machine-readable dataset with quantum metrics and CDC cutover phases)
-     * `plans/<slug>/<timestamp>/05_PLAN.md` (Mikado dependency-ordered implementation plan)
+   - This automatically scaffolds the stage directories and produces:
+     * `assessments/index.html` (Unified multi-run hub and latest run viewer)
+     * `assessments/latest` (Symlink pointing directly to the active run)
+     * `assessments/runs/<timestamp>/index.html` (Self-contained 11-tab interactive UI at the root of the run)
+     * `assessments/runs/<timestamp>/run_manifest.json` (Machine-readable run metadata, scorecard, and status)
+     * `assessments/runs/<timestamp>/01_discovery/` (Cleanly staged discovery artifacts with obvious names)
+       - `codmod_assessment_report.html`
+       - `graphify_ast_graph.json`
+       - `graphify_visualizer.html`
+       - `graphify_architecture_report.md`
+       - `codmod_execution_telemetry.json`
+     * `assessments/runs/<timestamp>/02_synthesis/` (Architectural matrices and vertical slices)
+       - `migration_matrix.json`
+       - `vertical_slices.json`
+     * `assessments/runs/<timestamp>/04_migration_plan/` (Hardened execution plan and contracts)
+       - `05_PLAN.md`
      * `00_visual-dashboard.html` (Automatically mirrored to the active conversation brain for instant UI inspection)
 
 ---
@@ -130,12 +142,10 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
 
 1. **Artifact Mirroring (Rule 5 compliance):**
    - The unified dashboard is automatically mirrored to `<appDataDir>/brain/<conversation-id>/00_visual-dashboard.html` by `digest_report.py`.
-   - If manual mirroring of the raw assessment report is required, copy `modernization_report.html` into your active chat session's system artifacts directory as `08_visual-recap.html`.
+   - If manual mirroring of the raw assessment report is required, copy `codmod_assessment_report.html` into your active chat session's system artifacts directory as `08_visual-recap.html`.
 
 2. **Write Telemetry Logs:**
-   - Append a single structured JSON line containing execution metadata to:
-     `plans/feature/<timestamp>/codmod_telemetry.log`
-   - Ensure the log object conforms to the defined schema:
+   - Append structured telemetry to `assessments/runs/<timestamp>/01_discovery/codmod_execution_telemetry.json` and append to `assessments/telemetry.log`:
      ```json
      {
        "timestamp": "YYYY-MM-DDTHH:MM:SSZ",
@@ -151,4 +161,4 @@ To maximize context hygiene and cut discovery execution time in half, dispatch *
      ```
 
 3. **Present Scorecard:**
-   - Present the Executive Scorecard, Central Dependency Hubs table, and planned vertical slices from `05_PLAN.md` to the user, highlighting the link to `modernization_dashboard.html` / `00_visual-dashboard.html`.
+   - Present the Executive Scorecard, Central Dependency Hubs table, and planned vertical slices from `05_PLAN.md` to the user, highlighting the link to `assessments/index.html` (or `00_visual-dashboard.html`).
