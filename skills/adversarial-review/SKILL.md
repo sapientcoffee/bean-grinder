@@ -16,9 +16,9 @@ flowchart TD
         Report["modernization_report.html"]
     end
 
-    Inputs --> Dispatch["Step 1: Dispatch 4 Reviewers Concurrently<br/>invoke_subagent (research)"]
+    Inputs --> Dispatch["Step 1: Dispatch 4 Reviewers Concurrently<br/>invoke_subagent"]
 
-    subgraph Swarm["Stakeholder Reviewer Swarm (TypeName: research)"]
+    subgraph Swarm["Stakeholder Reviewer Swarm"]
         Exec["@reviewer-exec<br/>• TCO & Cloud Spend<br/>• Rollback RPO/MTD<br/>• Licensing Sunsets"]
         Eng["@reviewer-engineer<br/>• AST Safety & Reflection<br/>• Build Performance<br/>• Contract Test Fixtures"]
         Arch["@reviewer-architect<br/>• Central Hub Blast Radius<br/>• Anti-Corruption Layers<br/>• Outbox CDC & Scalability"]
@@ -63,7 +63,7 @@ Before initiating the review loop, confirm the presence of:
 Dispatch all four specialized stakeholder reviewers in parallel using a single `invoke_subagent` call.
 
 #### Antigravity Subagent Execution Rules:
-- Use `TypeName: "research"` with explicit `Role`s to run in read-only analysis sandboxes.
+- Use specific subagent `TypeName`s (`reviewer-exec`, `reviewer-engineer`, `reviewer-architect`, `reviewer-pm`) so `/agents` in the TUI displays meaningful names instead of generic 'research'.
 - Set `Model: "inherit"` on all reviewers to inherit the parent session's configured model tier.
 
 #### Dispatch Payload:
@@ -73,25 +73,25 @@ Call `invoke_subagent` with the following configuration:
 {
   "Subagents": [
     {
-      "TypeName": "research",
+      "TypeName": "reviewer-exec",
       "Role": "Executive Reviewer",
       "Prompt": "Audit 05_PLAN.md against migration_matrix.json and business risk parameters.\n1. Scrutinize Total Cost of Ownership (TCO), parallel cloud infrastructure run-rates, enterprise licensing sunsets, and project timeline feasibility.\n2. Verify rollback strategies, Recovery Point Objective (RPO), and Maximum Tolerable Downtime (MTD).\n3. Flag any unmetered cloud spend or untracked commercial licenses.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "reviewer-engineer",
       "Role": "Engineering Reviewer",
       "Prompt": "Audit 05_PLAN.md for code transformation and developer experience feasibility.\n1. Verify safety of AST migrations, automated codemods, dynamic reflection risks, and build system upgrades.\n2. Audit local development loops, test execution performance, and contract test fixtures.\n3. Flag any untestable vertical slices or brittle code modifications.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "reviewer-architect",
       "Role": "Architecture Reviewer",
       "Prompt": "Audit 05_PLAN.md against graphify-out/GRAPH_REPORT.md and system dependencies.\n1. Audit Central Dependency Hubs to ensure high-blast-radius classes are protected by Anti-Corruption Layers (ACLs) or Facade isolation.\n2. Verify statefulness, distributed cache coherency, transactional outbox + CDC patterns, and zero-trust IAM boundaries.\n3. Flag any direct modifications to central hubs without modular isolation.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "reviewer-pm",
       "Role": "Product Reviewer",
       "Prompt": "Audit 05_PLAN.md for functional equivalence and scope control.\n1. Verify strict 1:1 functional and behavioral parity with legacy systems.\n2. Ensure undocumented legacy quirks, edge-case validation rules, and Gherkin acceptance criteria are preserved.\n3. Check scope discipline to prevent feature creep under the guise of modernization.\n4. Return structured JSON findings: [{id, severity, category, description, recommendation, blocker}].",
       "Model": "inherit"
