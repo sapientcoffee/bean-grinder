@@ -75,6 +75,15 @@ class TestRunManager(unittest.TestCase):
         dummy_telemetry = self.base_dir / "telemetry.json"
         dummy_telemetry.write_text('{"time_sec": 12.5}', encoding="utf-8")
 
+        dummy_seams = self.base_dir / "seam_findings.md"
+        dummy_seams.write_text("| Component ID | Target |\n| :--- | :--- |\n| SEAM-01 | Test |", encoding="utf-8")
+
+        dummy_specs = self.base_dir / "spec_invariants.md"
+        dummy_specs.write_text("| Requirement ID | Rule |\n| :--- | :--- |\n| RULE-01 | Invariant |", encoding="utf-8")
+
+        dummy_migration = self.base_dir / "migration_strategy.md"
+        dummy_migration.write_text("| Module | Strategy |\n| :--- | :--- |\n| Core | Refactor |", encoding="utf-8")
+
         destinations = self.mgr.organize_discovery_artifacts(
             run_dir=run_dir,
             codmod_report_path=dummy_report,
@@ -82,6 +91,9 @@ class TestRunManager(unittest.TestCase):
             graph_html_path=dummy_graph_html,
             graph_report_path=dummy_graph_report,
             telemetry_path=dummy_telemetry,
+            seams_report_path=dummy_seams,
+            specs_report_path=dummy_specs,
+            migration_report_path=dummy_migration,
         )
 
         disc_dir = run_dir / "01_discovery"
@@ -90,8 +102,14 @@ class TestRunManager(unittest.TestCase):
         self.assertTrue((disc_dir / "graphify_visualizer.html").exists())
         self.assertTrue((disc_dir / "graphify_architecture_report.md").exists())
         self.assertTrue((disc_dir / "codmod_execution_telemetry.json").exists())
+        self.assertTrue((disc_dir / "seam_findings.md").exists())
+        self.assertTrue((disc_dir / "spec_invariants.md").exists())
+        self.assertTrue((disc_dir / "migration_strategy.md").exists())
 
         self.assertEqual(destinations["codmod_report"].name, "codmod_assessment_report.html")
+        self.assertEqual(destinations["seams_report"].name, "seam_findings.md")
+        self.assertEqual(destinations["specs_report"].name, "spec_invariants.md")
+        self.assertEqual(destinations["migration_report"].name, "migration_strategy.md")
 
     def test_update_manifest(self):
         run_dir = self.mgr.scaffold_run(run_id="run_manifest_test")

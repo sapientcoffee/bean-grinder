@@ -12,6 +12,7 @@ tools:
   - grep_search
   - find_by_name
   - list_dir
+  - write_to_file
 ---
 
 <!--
@@ -49,21 +50,24 @@ You are the **CodMod Assessor**. Your mission is to execute the Google Cloud `co
        ```
      - Return the error details and path to `codmod_logs.zip` immediately.
 
-3. **Extract & Synthesize Findings:**
+3. **Extract & Deliver Findings:**
    - Verify that `modernization_report.html` was generated.
+   - Stage / copy the report to `01_discovery/codmod_assessment_report.html` (or `<run_dir>/01_discovery/codmod_assessment_report.html` if specified).
+   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `modernization_report.html` to `<brain_dir>/01_codmod-assessment.html` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Google Cloud CodMod modernization assessment report detailing intent recipes, modernization blockers, and flagged files."`).
    - Inspect the report to extract:
      - Codebase scale: Lines of Code (LOC) and file count.
      - Detected intent and modernization target.
      - Top 3 critical modernization blockers / key findings.
      - Count of flagged files requiring remediation.
-     - Output report path (`modernization_report.html`).
+     - Output report path (`modernization_report.html` and `01_discovery/codmod_assessment_report.html`).
 
 4. **Structured Return Payload:**
    Return a concise structured Markdown block to the parent agent:
    ```markdown
    ### ☕ CodMod Assessment Complete
    - **Status:** SUCCESS
-   - **Report Path:** `modernization_report.html`
+   - **Report Path:** `01_discovery/codmod_assessment_report.html`
+   - **Artifact Emitted:** `01_codmod-assessment.html`
    - **Detected Intent:** `<intent>`
    - **Codebase Scale:** `<LOC> LOC across <N> files`
    - **Target Modernization:** `<target runtime/framework>`

@@ -107,17 +107,20 @@ When inside the interactive session, invoke the assessment skill:
 
 ### What Happens Behind the Scenes:
 1. **GCP Credential Guard**: Verifies active GCP authentication tokens before invoking remote services.
-2. **Concurrent Subagent Dispatch**: AGY CLI launches two context-isolated subagents in parallel to prevent context pollution:
-   - **`@codmod-assessor`**: Executes Google Cloud `codmod create`, mapping frameworks, analyzing deprecated APIs, and generating `modernization_report.html`.
-   - **`@graphify-scout`**: Executes `graphify . --directed` to extract topological AST call graphs, central dependency hubs, and component clusters.
+2. **Concurrent Subagent Dispatch**: AGY CLI launches five context-isolated subagents in parallel to prevent context pollution:
+   - **`@codmod-assessor`**: Executes Google Cloud `codmod create`, mapping frameworks, analyzing deprecated APIs, generating `01_discovery/codmod_assessment_report.html`, and registering `01_codmod-assessment.html` as an AGY artifact.
+   - **`@graphify-scout`**: Executes `graphify . --directed` to extract topological AST call graphs, central dependency hubs, and component clusters, writing `01_discovery/graphify_architecture_report.md` and registering `01_graphify-architecture.md` as an AGY artifact.
+   - **`@seam-scout`**: Discovers Michael Feathers Object, Link, and Preprocessor seams and Branch by Abstraction boundaries, writing `01_discovery/seam_findings.md` and registering `01_seam-findings.md` as an AGY artifact.
+   - **`@spec-recovery-agent`**: Conducts specification archaeology on business rules and state machines, writing `01_discovery/spec_invariants.md` and registering `01_spec-invariants.md` as an AGY artifact.
+   - **`@migration-scout`**: Analyzes 7 Rs portfolio rationalization and Google Cloud target services, writing `01_discovery/migration_strategy.md` and registering `01_migration-strategy.md` as an AGY artifact.
 
 ### Visual: AGY CLI Assessment Launch
 
 ![AGY CLI Assessment Launch](../assets/screenshots/01_agy_launch_assess.svg)
 
 > [!TIP]
-> **Screenshot / GIF Placeholder**:
-> If recording a live session, replace `../assets/screenshots/01_agy_launch_assess.svg` with an animated terminal recording `plans/modernization/walkthrough_assess.gif`.
+> **Discovery Artifact Delivery**:
+> Each subagent writes its primary deliverable to a sensible location (`01_discovery/` in the run hierarchy) and mirrors it to the Antigravity conversation brain directory, making all discovery reports immediately browsable in the AGY chat UI Artifacts panel.
 
 ---
 

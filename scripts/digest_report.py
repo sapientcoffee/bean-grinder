@@ -1072,6 +1072,9 @@ def main():
             graph_json_path=args.graph,
             graph_html_path=graph_html_path,
             graph_report_path=graph_report_path,
+            seams_report_path=args.seams_report,
+            specs_report_path=args.specs_report,
+            migration_report_path=args.migration_report,
         )
 
         effective_report = destinations.get("codmod_report", args.report)
