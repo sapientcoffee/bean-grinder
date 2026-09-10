@@ -17,6 +17,7 @@
 
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -212,6 +213,79 @@ class TestDigestReport(unittest.TestCase):
         dash_content = (out_dir / "index.html").read_text(encoding="utf-8")
         self.assertIn("Unified Modernization Dashboard", dash_content)
         self.assertIn("tab-scorecard", dash_content)
+
+    def test_discovery_artifacts_and_brain_mirroring(self):
+        """Verify discovery scout outputs are organized and mirrored to AGY brain artifacts."""
+        out_dir = self.tmp_path / "out_discovery_test"
+        brain_dir = self.tmp_path / "mock_brain"
+        brain_dir.mkdir(parents=True, exist_ok=True)
+
+        seams_file = self.tmp_path / "seam_findings.md"
+        seams_file.write_text("""| Component ID | Target Namespace / Class | Seam Type | Seam Mechanism | Candidate Pattern | Blast Radius |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `SEAM-001` | `com.example.BillingService` | Object Seam | Interface DI | Branch by Abstraction | Moderate |
+""", encoding="utf-8")
+
+        specs_file = self.tmp_path / "spec_invariants.md"
+        specs_file.write_text("""| Requirement ID | Domain Rule Summary | Source Code Location | Preconditions | Postconditions | Review Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `RULE-001` | Daily quota check | `Quota.java:10-25` | Valid token | Deduct 1 credit | `[AMBIGUOUS_SPEC: verify threshold]` |
+""", encoding="utf-8")
+
+        migration_file = self.tmp_path / "migration_strategy.md"
+        migration_file.write_text("""| Module / Component | Current Runtime | Proposed Strategy (7 Rs) | Rationale & Blast Radius |
+| :--- | :--- | :--- | :--- |
+| Core API | Java 8 / EJB | Refactor / Rearchitect | Modernize to Cloud Run |
+""", encoding="utf-8")
+
+        graph_report_file = self.tmp_path / "GRAPH_REPORT.md"
+        graph_report_file.write_text("# Graphify Report\nCentral dependency hubs analysis.", encoding="utf-8")
+
+        cmd = [
+            sys.executable,
+            "scripts/digest_report.py",
+            "--report", str(self.mock_html),
+            "--graph", str(self.mock_graph),
+            "--graph-report", str(graph_report_file),
+            "--seams-report", str(seams_file),
+            "--specs-report", str(specs_file),
+            "--migration-report", str(migration_file),
+            "--output-dir", str(out_dir),
+            "--brain-dir", str(brain_dir),
+        ]
+        res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+        self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
+
+        # Check organized discovery files in run dir
+        disc_dir = out_dir / "01_discovery"
+        self.assertTrue((disc_dir / "codmod_assessment_report.html").exists())
+        self.assertTrue((disc_dir / "graphify_ast_graph.json").exists())
+        self.assertTrue((disc_dir / "graphify_architecture_report.md").exists())
+        self.assertTrue((disc_dir / "seam_findings.md").exists())
+        self.assertTrue((disc_dir / "spec_invariants.md").exists())
+        self.assertTrue((disc_dir / "migration_strategy.md").exists())
+
+        # Check mirrored AGY artifacts in brain dir
+        expected_artifacts = [
+            "00_visual-dashboard.html",
+            "01_codmod-assessment.html",
+            "01_graphify-architecture.md",
+            "01_seam-findings.md",
+            "01_spec-invariants.md",
+            "01_migration-strategy.md",
+            "05_plan.md",
+            "migration_matrix.json",
+        ]
+        for art in expected_artifacts:
+            art_file = brain_dir / art
+            meta_file = brain_dir / f"{art}.metadata.json"
+            self.assertTrue(art_file.exists(), f"Missing AGY artifact: {art}")
+            self.assertTrue(meta_file.exists(), f"Missing metadata for: {art}")
+            with open(meta_file, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+            self.assertTrue(meta.get("userFacing"))
+            self.assertFalse(meta.get("requestFeedback"))
+            self.assertTrue(len(meta.get("summary", "")) > 5)
 
 
 if __name__ == "__main__":

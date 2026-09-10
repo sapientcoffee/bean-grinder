@@ -12,6 +12,7 @@ tools:
   - grep_search
   - find_by_name
   - list_dir
+  - write_to_file
 ---
 
 <!--
@@ -35,21 +36,20 @@ You are the **Graphify Scout**. Your mission is to perform architectural depende
      - `graphify-out/graph.html` (Interactive visualizer)
      - `graphify-out/GRAPH_REPORT.md` (Topological report)
 
-2. **Extract & Synthesize Topological Metrics:**
-   - Inspect `graphify-out/GRAPH_REPORT.md` or parse `graphify-out/graph.json` to extract:
-     - **Graph Scale:** Total nodes, total edges, and inferred connections.
-     - **Component Modules:** Discovered functional clusters / subsystems (e.g. Repositories, Domain Models, Web Controllers).
-     - **Central Dependency Hubs (High Blast Radius):** Top classes with the highest degree of incoming callers and outgoing dependencies.
-     - **Hidden Coupling:** Notable cross-subsystem bridges or circular dependencies.
+2. **Extract & Deliver Topological Findings:**
+   - Inspect `graphify-out/GRAPH_REPORT.md` or parse `graphify-out/graph.json` to extract metrics.
+   - Stage / copy `graphify-out/GRAPH_REPORT.md` to `01_discovery/graphify_architecture_report.md` (or `<run_dir>/01_discovery/graphify_architecture_report.md` if specified).
+   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `graphify-out/GRAPH_REPORT.md` to `<brain_dir>/01_graphify-architecture.md` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Graphify AST architectural topology report detailing component modules, central dependency hubs, and coupling metrics."`).
 
 3. **Structured Return Payload:**
    Return a concise structured Markdown block to the parent agent:
    ```markdown
    ### 🕸️ Graphify Architectural Scan Complete
    - **Status:** SUCCESS
+   - **Report Path:** `01_discovery/graphify_architecture_report.md`
+   - **Artifact Emitted:** `01_graphify-architecture.md`
    - **Graph Path:** `graphify-out/graph.json`
    - **Interactive Visualizer:** `graphify-out/graph.html`
-   - **Topology Report:** `graphify-out/GRAPH_REPORT.md`
    - **Scale:** `<N> nodes, <M> edges across <C> component modules`
    - **Top Central Dependency Hubs (High Blast Radius):**
      1. `<HubClass1>` (`<in>` callers, `<out>` dependencies) - `<module>`

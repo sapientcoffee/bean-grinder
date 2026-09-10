@@ -100,6 +100,20 @@ def find_brain_dirs(explicit_brain_dir: Optional[str] = None) -> List[str]:
     return dirs
 
 
+ARTIFACT_SUMMARIES: Dict[str, str] = {
+    "00_visual-dashboard.html": "Unified Modernization Dashboard combining Executive Modernization Scorecard, Interactive Vertical Slices (Kanban), Central Dependency Hubs Matrix, Component Modules, Integrated Google Cloud CodMod assessment report, and Graphify AST Knowledge Graph visualizer.",
+    "01_codmod-assessment.html": "Google Cloud CodMod modernization assessment report detailing intent recipes, modernization blockers, and flagged files.",
+    "01_graphify-architecture.md": "Graphify AST architectural topology report detailing component modules, central dependency hubs, and coupling metrics.",
+    "01_seam-findings.md": "Michael Feathers Seam Discovery inventory mapping Object, Link, and Preprocessor seams, and Sprout/Wrap intervention points.",
+    "01_spec-invariants.md": "Specification archaeology report recovering domain rules, state machines, and flagging ambiguous specifications requiring human review.",
+    "01_migration-strategy.md": "Migration strategy and 7 Rs portfolio rationalization matrix mapping legacy runtimes to target Google Cloud architecture.",
+    "05_plan.md": "Mikado dependency-ordered modernization execution plan covering vertical slices 0 to 5.",
+    "migration_matrix.json": "Machine-readable dataset of 7 Rs strategies, Feathers' seams, and CDC cutover phases.",
+    "05_adversarial_review.md": "Adversarial review report reconciling cross-functional reviews and convergence score.",
+    "adversarial_review_matrix.json": "Machine-readable adversarial review matrix with persona scores and trade-off resolutions.",
+}
+
+
 def mirror_dashboard(
     dashboard_path: Path,
     target_filename: str = "00_visual-dashboard.html",
@@ -127,7 +141,7 @@ def mirror_dashboard(
             try:
                 meta_file = Path(b_dir) / f"{target_filename}.metadata.json"
                 meta_content = {
-                    "summary": "Unified Modernization Dashboard combining Executive Modernization Scorecard, Interactive Vertical Slices (Kanban), Central Dependency Hubs Matrix, Component Modules, Integrated Google Cloud CodMod assessment report, and Graphify AST Knowledge Graph visualizer.",
+                    "summary": ARTIFACT_SUMMARIES.get(target_filename, "Unified Modernization Dashboard"),
                     "updatedAt": datetime.now().isoformat() + "Z",
                     "requestFeedback": False,
                     "userFacing": True
@@ -145,7 +159,7 @@ def mirror_dashboard(
                         try:
                             aux_meta = Path(b_dir) / f"{dest_name}.metadata.json"
                             aux_meta_content = {
-                                "summary": f"Modernization artifact: {dest_name}",
+                                "summary": ARTIFACT_SUMMARIES.get(dest_name, f"Modernization artifact: {dest_name}"),
                                 "updatedAt": datetime.now().isoformat() + "Z",
                                 "requestFeedback": False,
                                 "userFacing": True
@@ -1944,6 +1958,60 @@ def generate_modernization_dashboard(
 
     if mirror:
         aux_files = []
+
+        # Discovery Stage Artifacts (mirrored as AGY UI artifacts)
+        codmod_candidates = [
+            output_dir / "01_discovery" / "codmod_assessment_report.html",
+            codmod_report_path if codmod_report_path else None,
+            output_dir / "modernization_report.html",
+            Path("modernization_report.html"),
+        ]
+        for cc in codmod_candidates:
+            if cc and cc.exists():
+                aux_files.append((cc, "01_codmod-assessment.html"))
+                break
+
+        graph_report_candidates = [
+            output_dir / "01_discovery" / "graphify_architecture_report.md",
+            graph_report_path if graph_report_path else None,
+            output_dir / "GRAPH_REPORT.md",
+            Path("graphify-out/GRAPH_REPORT.md"),
+        ]
+        for grc in graph_report_candidates:
+            if grc and grc.exists():
+                aux_files.append((grc, "01_graphify-architecture.md"))
+                break
+
+        seams_candidates = [
+            output_dir / "01_discovery" / "seam_findings.md",
+            Path("01_discovery/seam_findings.md"),
+            Path("seam_findings.md"),
+        ]
+        for sc in seams_candidates:
+            if sc and sc.exists():
+                aux_files.append((sc, "01_seam-findings.md"))
+                break
+
+        specs_candidates = [
+            output_dir / "01_discovery" / "spec_invariants.md",
+            Path("01_discovery/spec_invariants.md"),
+            Path("spec_invariants.md"),
+        ]
+        for spc in specs_candidates:
+            if spc and spc.exists():
+                aux_files.append((spc, "01_spec-invariants.md"))
+                break
+
+        migration_candidates = [
+            output_dir / "01_discovery" / "migration_strategy.md",
+            Path("01_discovery/migration_strategy.md"),
+            Path("migration_strategy.md"),
+        ]
+        for mc_cand in migration_candidates:
+            if mc_cand and mc_cand.exists():
+                aux_files.append((mc_cand, "01_migration-strategy.md"))
+                break
+
         matrix_candidates = [
             output_dir / "02_synthesis" / "migration_matrix.json",
             output_dir / "migration_matrix.json",

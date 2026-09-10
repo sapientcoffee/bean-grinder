@@ -97,6 +97,7 @@ class TestAgentsSchema(unittest.TestCase):
             "runtime-parity-verifier.md",
             "seam-scout.md",
             "spec-recovery-agent.md",
+            "synthesis-agent.md",
         ]
         present = set(os.listdir(self.agents_dir))
         for exp in expected:

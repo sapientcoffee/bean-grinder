@@ -10,6 +10,7 @@ tools:
   - grep_search
   - find_by_name
   - list_dir
+  - write_to_file
 ---
 
 <!--
@@ -46,16 +47,12 @@ You are the **Migration Scout**. Your mission is to perform comprehensive, non-i
    - Legacy C/C++ VM bindings detected ➔ `ARM_MIGRATION`
    - AWS / Azure libraries detected ➔ `CLOUD_TO_CLOUD`
 
-4. **Output Format:**
-   Provide a clean structured Markdown summary containing:
-   - File counts and Lines of Code (LOC) estimate.
-   - Primary languages, runtime versions, and End-of-Life (EOL) statuses detected.
-   - **7 Rs Portfolio Rationalization Matrix:**
-     | Module / Component | Current Runtime | Proposed Strategy (7 Rs) | Rationale & Blast Radius |
-     | :--- | :--- | :--- | :--- |
-     | Core Billing Engine | Java 8 / EJB | Refactor / Rearchitect | High change velocity, high business value |
-     | Legacy Reporting | Crystal Reports | Retire / Replace | Replaced by BigQuery / Looker |
-     | Session Store | Self-hosted Redis | Replatform | Migrate to Memorystore |
-   - Identified migration risks and technical debt hotspots.
-   - Recommended `codmod` CLI command and flags.
+4. **Output Format & Delivery:**
+   - **Primary Output File:** Write the complete rationalization report to `01_discovery/migration_strategy.md` (or `<run_dir>/01_discovery/migration_strategy.md` if specified).
+   - **Antigravity (AGY) Artifact:** If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also write the report to `<brain_dir>/01_migration-strategy.md` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Migration strategy and 7 Rs portfolio rationalization matrix mapping legacy runtimes to target Google Cloud architecture."`).
+   - **Summary Return Payload:** Provide a clean structured Markdown summary containing:
+     - File counts and Lines of Code (LOC) estimate.
+     - Primary languages, runtime versions, and End-of-Life (EOL) statuses detected.
+     - Discovered 7 Rs matrix.
+     - Output file paths.
 

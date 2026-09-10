@@ -156,6 +156,9 @@ class RunManager:
         graph_html_path: Optional[Path] = None,
         graph_report_path: Optional[Path] = None,
         telemetry_path: Optional[Path] = None,
+        seams_report_path: Optional[Path] = None,
+        specs_report_path: Optional[Path] = None,
+        migration_report_path: Optional[Path] = None,
     ) -> Dict[str, Path]:
         """
         Copy or relocate discovery artifacts into 01_discovery/ with descriptive names.
@@ -199,6 +202,27 @@ class RunManager:
             if telemetry_path.resolve() != target.resolve():
                 shutil.copy2(telemetry_path, target)
             destinations["telemetry"] = target
+
+        # 6. Seam Scout findings
+        if seams_report_path and seams_report_path.exists():
+            target = discovery_dir / "seam_findings.md"
+            if seams_report_path.resolve() != target.resolve():
+                shutil.copy2(seams_report_path, target)
+            destinations["seams_report"] = target
+
+        # 7. Spec Recovery Scout invariants
+        if specs_report_path and specs_report_path.exists():
+            target = discovery_dir / "spec_invariants.md"
+            if specs_report_path.resolve() != target.resolve():
+                shutil.copy2(specs_report_path, target)
+            destinations["specs_report"] = target
+
+        # 8. Migration Scout strategy
+        if migration_report_path and migration_report_path.exists():
+            target = discovery_dir / "migration_strategy.md"
+            if migration_report_path.resolve() != target.resolve():
+                shutil.copy2(migration_report_path, target)
+            destinations["migration_report"] = target
 
         return destinations
 

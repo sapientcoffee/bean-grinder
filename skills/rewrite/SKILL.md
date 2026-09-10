@@ -93,6 +93,7 @@ flowchart TD
      - **Slice 3 (Integration & Cutover):** Edge routing, Strangler Fig proxying, and reverse-sync.
 2. **Compile `05_PLAN.md`**:
    - Detail tasks, acceptance criteria, file targets, and rollback procedures.
+   - *Tip:* Run the `/synthesize` skill or invoke `@synthesis-agent` to automatically generate or iterate on these slices from existing discovery findings.
 
 ---
 
