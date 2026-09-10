@@ -15,11 +15,11 @@ flowchart TD
     
     subgraph ParallelScouts["Parallel Discovery Scouts"]
         direction TB
-        S1["@codmod-assessor (self)<br/>codmod create --intent ..."]
-        S2["@graphify-scout (self)<br/>graphify . --directed"]
-        S3["@seam-scout (research)<br/>Object, Link & Preprocessor Seams"]
-        S4["@spec-recovery-agent (research)<br/>Invariants & [AMBIGUOUS_SPEC]"]
-        S5["@migration-scout (research)<br/>7 Rs Matrix & EOL Frameworks"]
+        S1["@codmod-assessor<br/>codmod create --intent ..."]
+        S2["@graphify-scout<br/>graphify . --directed --code-only"]
+        S3["@seam-scout<br/>Object, Link & Preprocessor Seams"]
+        S4["@spec-recovery-agent<br/>Invariants & [AMBIGUOUS_SPEC]"]
+        S5["@migration-scout<br/>7 Rs Matrix & EOL Frameworks"]
     end
     
     Dispatch --> ParallelScouts
@@ -52,8 +52,7 @@ Verify active Google Cloud authorization before launching remote assessment oper
 Dispatch all five specialized discovery scouts simultaneously in a single `invoke_subagent` tool call.
 
 #### Antigravity Subagent Execution Rules:
-- Use `TypeName: "self"` for subagents that execute CLI commands (`codmod-assessor`, `graphify-scout`).
-- Use `TypeName: "research"` for read-only exploration and archaeology scouts (`seam-scout`, `spec-recovery-agent`, `migration-scout`).
+- Use specific subagent `TypeName`s (`codmod-assessor`, `graphify-scout`, `seam-scout`, `spec-recovery-agent`, `migration-scout`) so `/agents` in the TUI displays meaningful names instead of generic 'self' or 'research'.
 - Set `Model: "inherit"` on all subagents to preserve the parent session's configured model tier.
 
 #### Dispatch Payload:
@@ -63,52 +62,33 @@ Call `invoke_subagent` with the following configuration:
 {
   "Subagents": [
     {
-      "TypeName": "self",
+      "TypeName": "codmod-assessor",
       "Role": "CodMod Assessor",
-      "Prompt": "Execute Google Cloud codmod modernization assessment on directory: {{target_dir}} (or workspace root).
-1. Inspect codebase to detect frameworks and select optimal --intent and --optional-sections.
-2. Apply modelset routing (default --modelset=gemini-3.8-flash --region=global, or --modelset=gemini-3.1-pro if requested).
-3. Execute 'codmod create' non-interactively to generate modernization_report.html. Trap failures with 'codmod collect-logs'.
-4. Extract key modernization blockers, LOC count, flagged files, and output report path. Return a concise structured summary.",
+      "Prompt": "Execute Google Cloud codmod modernization assessment on directory: {{target_dir}} (or workspace root).\n1. Inspect codebase to detect frameworks and select optimal --intent and --optional-sections.\n2. Apply modelset routing (default --modelset=gemini-3.8-flash --region=global, or --modelset=gemini-3.1-pro if requested).\n3. Execute 'codmod create' non-interactively to generate modernization_report.html (do NOT pass '--estimate-cost', as custom modelsets lack client pricing tables and will abort). Trap failures with 'codmod collect-logs'.\n4. Extract key modernization blockers, LOC count, flagged files, and output report path. Return a concise structured summary.",
       "Model": "inherit"
     },
     {
-      "TypeName": "self",
+      "TypeName": "graphify-scout",
       "Role": "Graphify Scout",
-      "Prompt": "Perform architectural dependency analysis on directory: {{target_dir}} (or workspace root).
-1. Execute 'graphify . --directed' to build the topological knowledge graph.
-2. Verify generation of graphify-out/graph.json, graphify-out/graph.html, and graphify-out/GRAPH_REPORT.md.
-3. Extract graph metrics: total nodes, edges, component clusters, and top central dependency hubs (high blast radius).
-4. Return a concise structured summary with artifact paths.",
+      "Prompt": "Perform architectural dependency analysis on directory: {{target_dir}} (or workspace root).\n1. Execute 'graphify . --directed --code-only && graphify cluster-only .' to build the topological knowledge graph (using --code-only avoids requiring an LLM API key).\n2. Verify generation of graphify-out/graph.json, graphify-out/graph.html, and graphify-out/GRAPH_REPORT.md.\n3. Extract graph metrics: total nodes, edges, component clusters, and top central dependency hubs (high blast radius).\n4. Return a concise structured summary with artifact paths.",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "seam-scout",
       "Role": "Seam Scout",
-      "Prompt": "Conduct non-destructive structural seam exploration on directory: {{target_dir}} (or workspace root).
-1. Identify Michael Feathers' seams: Object Seams (polymorphism/DI), Link Seams (classpath/assembly injection), and Preprocessor Seams.
-2. Identify candidate sites for Sprout Method, Sprout Class, Wrap Method, and Wrap Class.
-3. Propose Branch by Abstraction boundaries for monolithic subsystems.
-4. Return a structured Markdown table: Component ID, Target Class, Seam Type, Decoupling Pattern, and Blast Radius.",
+      "Prompt": "Conduct non-destructive structural seam exploration on directory: {{target_dir}} (or workspace root).\n1. Identify Michael Feathers' seams: Object Seams (polymorphism/DI), Link Seams (classpath/assembly injection), and Preprocessor Seams.\n2. Identify candidate sites for Sprout Method, Sprout Class, Wrap Method, and Wrap Class.\n3. Propose Branch by Abstraction boundaries for monolithic subsystems.\n4. Return a structured Markdown table: Component ID, Target Class, Seam Type, Decoupling Pattern, and Blast Radius.",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "spec-recovery-agent",
       "Role": "Spec Recovery Scout",
-      "Prompt": "Perform specification archaeology on directory: {{target_dir}} (or workspace root).
-1. Reconstruct business rules, validation logic, entity lifecycle state machines, and implicit invariants from source code.
-2. Flag ambiguous, undocumented, or contradictory logic using '[AMBIGUOUS_SPEC: <description>]'.
-3. Return a structured Markdown table: Requirement ID, Summary, Source Location (file:line), Preconditions, Postconditions, and Review Status.",
+      "Prompt": "Perform specification archaeology on directory: {{target_dir}} (or workspace root).\n1. Reconstruct business rules, validation logic, entity lifecycle state machines, and implicit invariants from source code.\n2. Flag ambiguous, undocumented, or contradictory logic using '[AMBIGUOUS_SPEC: <description>]'.\n3. Return a structured Markdown table: Requirement ID, Summary, Source Location (file:line), Preconditions, Postconditions, and Review Status.",
       "Model": "inherit"
     },
     {
-      "TypeName": "research",
+      "TypeName": "migration-scout",
       "Role": "Migration Scout",
-      "Prompt": "Perform portfolio rationalization scan on directory: {{target_dir}} (or workspace root).
-1. Inspect build descriptors (pom.xml, build.gradle, *.csproj, package.json) for runtime versions, EOL frameworks, and third-party libraries.
-2. Classify major subsystems across the 7 Rs taxonomy: Retire, Retain, Rehost, Relocate, Repurchase, Replatform, Refactor/Re-architect.
-3. Map candidate Google Cloud target services (Cloud Run, GKE, Cloud SQL, Spanner).
-4. Return a structured 7 Rs classification matrix and migration risk summary.",
+      "Prompt": "Perform portfolio rationalization scan on directory: {{target_dir}} (or workspace root).\n1. Inspect build descriptors (pom.xml, build.gradle, *.csproj, package.json) for runtime versions, EOL frameworks, and third-party libraries.\n2. Classify major subsystems across the 7 Rs taxonomy: Retire, Retain, Rehost, Relocate, Repurchase, Replatform, Refactor/Re-architect.\n3. Map candidate Google Cloud target services (Cloud Run, GKE, Cloud SQL, Spanner).\n4. Return a structured 7 Rs classification matrix and migration risk summary.",
       "Model": "inherit"
     }
   ]

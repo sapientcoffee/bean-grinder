@@ -38,7 +38,7 @@ You are the **CodMod Assessor**. Your mission is to execute the Google Cloud `co
    - Apply modelset routing: default `--modelset=gemini-3.8-flash --region=global` (Gemini 3.8 Flash High) (or `--modelset=gemini-3.1-pro --region=global` if `pro` is requested).
 
 2. **Execute CodMod Assessment:**
-   - Run the assessment command non-interactively:
+   - Run the assessment command non-interactively (do NOT use `--estimate-cost`, as custom model sets lack client pricing tables and will abort with 'no pricing available'):
      ```bash
      codmod create --intent <intent> --optional-sections <optional-sections> --modelset <modelset> --region global -o modernization_report.html
      ```
