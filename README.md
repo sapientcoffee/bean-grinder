@@ -318,6 +318,7 @@ flowchart TD
 | Subagent | Role & Specialization | Key Operational Directives |
 | :--- | :--- | :--- |
 | **`@spec-recovery-agent`** | Domain Rule & Spec Extraction | Reverse-engineers business logic and state invariants; emits mandatory `[AMBIGUOUS_SPEC_REQUIRES_HUMAN_REVIEW]` token for undocumented behavior. |
+| **`@synthesis-agent`** | Architectural Synthesis & Reconciliation | Reconciles CodMod, Graphify, Seam, Spec Recovery, and Migration findings into domain-driven slices and actionable `05_PLAN.md`. |
 | **`@seam-scout`** | Seam Discovery & Decoupling | Maps Michael Feathers' Object, Link, and Preprocessor seams; identifies Sprout/Wrap opportunities and Branch by Abstraction boundaries. |
 | **`@codmod-assessor`** | Google Cloud CodMod Execution | Runs `codmod create`, intent selection, diagnostic failure collection via `codmod collect-logs`, and blocker synthesis in an isolated subagent. |
 | **`@graphify-scout`** | AST Knowledge Graph Extraction | Runs `graphify . --directed`, validating topology artifacts, central dependency hubs, and modular community clusters. |
@@ -336,6 +337,7 @@ flowchart TD
 | Skill | Namespace | Purpose |
 | :--- | :--- | :--- |
 | **`assess`** | `skills/assess/` | Parallel orchestrator validating GCP credentials and concurrently dispatching discovery subagents. |
+| **`synthesize`** | `skills/synthesize/` | Standalone architectural synthesis: executes or iterates on vertical slicing, Feathers' seams, and `05_PLAN.md` using existing discovery artifacts without re-running scouts. |
 | **`rewrite`** | `skills/rewrite/` | Application rewrite protocol: ingests assessment reports, digests semantic findings, maps runtimes, and cuts vertical slices into `05_PLAN.md`. |
 | **`adversarial-review`**| `skills/adversarial-review/` | Multi-persona adversarial review & hardening loop: orchestrates reviewer swarm to iterate on `05_PLAN.md` until consensus. |
 
@@ -343,7 +345,8 @@ flowchart TD
 
 | Script | Purpose | Key Flags & Options |
 | :--- | :--- | :--- |
-| **`scripts/digest_report.py`** | Dual-lens digest CLI synthesizing `codmod` reports with `graphify` AST graphs. | `--codmod <html_path>`<br/>`--graphify <dir_path>`<br/>`--plan-out <path>`<br/>`--matrix-out <path>`<br/>`--dashboard-out <path>` |
+| **`skills/synthesize/scripts/synthesize_runner.py`** | Standalone runner for the synthesize skill; locates existing discovery runs and refreshes the plan & dashboard. | `--run-dir <latest\|path>`<br/>`--base-dir <dir>`<br/>`--no-dashboard`<br/>`--summary-only` |
+| **`scripts/digest_report.py`** | Dual-lens digest CLI synthesizing `codmod` reports with `graphify` AST graphs. Supports auto-discovery via `--from-run`. | `--from-run <latest\|path>`<br/>`--report <path>`<br/>`--graph <path>`<br/>`--output-dir <path>`<br/>`--seams-report <path>`<br/>`--specs-report <path>` |
 | **`scripts/generate_dashboard.py`** | Responsive HTML modernization dashboard generator. | Supports 11 dedicated tabs (including 🛡️ Adversarial Review), dark/light themes, inline search, embedded iframe & digest toggles, and UI artifact mirroring (`--review-matrix` supported). |
 | **`scripts/review_loop.py`** | Multi-persona adversarial review & hardening engine. | `--plan-dir <dir>`<br/>`--simulate-round <1\|2\|3>`<br/>`--ingest-review <path>`<br/>`--persona <exec\|engineer\|architect\|pm>`<br/>`--threshold 90.0`<br/>`--max-rounds 3` |
 

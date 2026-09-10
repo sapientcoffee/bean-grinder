@@ -157,6 +157,33 @@ def parse_codmod_report(report_path: Path) -> Dict[str, Any]:
     return data
 
 
+def parse_markdown_table_rows(content: str) -> List[Dict[str, str]]:
+    """Parse the first markdown table in content into a list of row dicts."""
+    rows = []
+    lines = [line.strip() for line in content.splitlines() if line.strip()]
+    headers: List[str] = []
+    in_table = False
+
+    for line in lines:
+        if line.startswith("|") and line.endswith("|"):
+            parts = [c.strip() for c in line[1:-1].split("|")]
+            if not in_table:
+                headers = parts
+                in_table = True
+            elif all(re.match(r"^:?-+:?$", p) for p in parts):
+                continue
+            else:
+                row_dict = {}
+                for idx, h in enumerate(headers):
+                    val = parts[idx] if idx < len(parts) else ""
+                    clean_h = re.sub(r"[^a-zA-Z0-9_]", "_", h.lower().strip("_"))
+                    row_dict[clean_h] = val
+                rows.append(row_dict)
+        elif in_table and rows:
+            break
+    return rows
+
+
 def parse_graphify_graph(graph_path: Path) -> Dict[str, Any]:
     """Parse Graphify graph.json and calculate component modules and central dependency hubs."""
     if not graph_path.exists():
@@ -281,7 +308,10 @@ def parse_graphify_graph(graph_path: Path) -> Dict[str, Any]:
 
 def synthesize_migration_slices(
     codmod_data: Dict[str, Any],
-    graph_data: Dict[str, Any]
+    graph_data: Dict[str, Any],
+    seams_data: Optional[List[Dict[str, Any]]] = None,
+    specs_data: Optional[List[Dict[str, Any]]] = None,
+    migration_data: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Correlate CodMod recommendations with component modules and build dependency-ordered slices."""
     modules = graph_data.get("component_modules", graph_data.get("communities", {}))
@@ -477,23 +507,55 @@ def synthesize_migration_slices(
         })
 
     # Build Feathers' Seams & Decoupling inventory
-    seams_inventory = []
-    for hub in central_hubs[:10]:
-        seams_inventory.append({
-            "target": hub["label"],
-            "type": "Object Seam",
-            "technique": "Branch by Abstraction / Interface Extraction",
-            "sprout_opportunity": "Introduce Sprout Method/Class for new domain validation to prevent modifying legacy methods.",
-            "blast_radius": f"{hub.get('total_connections', hub.get('degree', 0))} connections ({hub.get('inbound_callers', hub.get('in_degree', 0))} callers)"
-        })
-    for m in infra_modules[:3]:
-        seams_inventory.append({
-            "target": m["name"],
-            "type": "Link Seam",
-            "technique": "Build-Time Dependency Substitution / Compiler Target Upgrade",
-            "sprout_opportunity": "Isolate toolchain plugins without altering production source files.",
-            "blast_radius": f"{m.get('in_degree', 0)} callers"
-        })
+    # Build Feathers' Seams & Decoupling inventory
+    if seams_data:
+        empirical_seams = []
+        for row in seams_data:
+            target = row.get("target_class") or row.get("target") or row.get("target_component")
+            if target:
+                empirical_seams.append({
+                    "target": target,
+                    "type": row.get("seam_type", "Object Seam"),
+                    "technique": row.get("decoupling_pattern") or row.get("technique", "Branch by Abstraction"),
+                    "sprout_opportunity": row.get("sprout_opportunity") or row.get("intervention_opportunity", "Introduce Sprout Method/Class"),
+                    "blast_radius": row.get("blast_radius", "Medium coupling")
+                })
+        seams_inventory = empirical_seams if empirical_seams else []
+    else:
+        seams_inventory = []
+        for hub in central_hubs[:10]:
+            seams_inventory.append({
+                "target": hub["label"],
+                "type": "Object Seam",
+                "technique": "Branch by Abstraction / Interface Extraction",
+                "sprout_opportunity": "Introduce Sprout Method/Class for new domain validation to prevent modifying legacy methods.",
+                "blast_radius": f"{hub.get('total_connections', hub.get('degree', 0))} connections ({hub.get('inbound_callers', hub.get('in_degree', 0))} callers)"
+            })
+        for m in infra_modules[:3]:
+            seams_inventory.append({
+                "target": m["name"],
+                "type": "Link Seam",
+                "technique": "Build-Time Dependency Substitution / Compiler Target Upgrade",
+                "sprout_opportunity": "Isolate toolchain plugins without altering production source files.",
+                "blast_radius": f"{m.get('in_degree', 0)} callers"
+            })
+
+    if migration_data:
+        empirical_7rs = []
+        for row in migration_data:
+            mod_name = row.get("subsystem___library") or row.get("subsystem") or row.get("component_module")
+            if mod_name:
+                empirical_7rs.append({
+                    "module_name": mod_name,
+                    "strategy": row.get("7_rs_strategy") or row.get("strategy", "Refactor"),
+                    "inbound_callers": 0,
+                    "outbound_dependencies": 0,
+                    "central_hubs": [],
+                    "rationale": row.get("rationale", ""),
+                    "target_service": row.get("target_cloud_service", "Cloud Run"),
+                })
+        if empirical_7rs:
+            portfolio_7rs = empirical_7rs
 
     # Build Data Modernization & Outbox CDC Architecture
     data_architecture = {
@@ -523,7 +585,7 @@ def synthesize_migration_slices(
         ]
     }
 
-    return {
+    result = {
         "application_title": codmod_data.get("title", "Modernized Application"),
         "total_component_modules": len(modules),
         "total_communities": len(modules),  # Backward-compatible alias
@@ -541,6 +603,18 @@ def synthesize_migration_slices(
         "data_architecture": data_architecture,
         "mikado_tree": mikado_tree
     }
+
+    if specs_data:
+        ambiguous = [
+            s for s in specs_data
+            if "AMBIGUOUS" in s.get("review_status", "").upper()
+            or "AMBIGUOUS" in s.get("domain_rule_summary", "").upper()
+        ]
+        result["recovered_invariants"] = specs_data
+        result["ambiguous_specs_count"] = len(ambiguous)
+        result["ambiguous_specs"] = ambiguous
+
+    return result
 
 
 def generate_plan_markdown(matrix: Dict[str, Any], output_path: Path) -> str:
@@ -609,6 +683,26 @@ def generate_plan_markdown(matrix: Dict[str, Any], output_path: Path) -> str:
             lines.append(
                 f"| `{sm['target']}` | **{sm['type']}** | {sm['technique']} | {sm['sprout_opportunity']} |"
             )
+
+    ambiguous_specs = matrix.get("ambiguous_specs", [])
+    if ambiguous_specs:
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## ⚠️ Ambiguous Specifications Requiring Human Approval (HITL Gate)",
+            "> The following legacy business invariants require clarification before code refactoring:",
+            "",
+            "| Requirement ID | Domain Rule Summary | Source Code Location | Preconditions / Postconditions | Review Status |",
+            "| :--- | :--- | :--- | :--- | :--- |"
+        ])
+        for amb in ambiguous_specs[:8]:
+            req_id = amb.get("requirement_id", "REQ-?")
+            rule = amb.get("domain_rule_summary", "Unspecified rule")
+            loc = amb.get("source_code_location", "Unknown")
+            cond = f"{amb.get('preconditions', '')} -> {amb.get('postconditions', '')}".strip(" ->")
+            stat = amb.get("review_status", "[AMBIGUOUS]")
+            lines.append(f"| `{req_id}` | {rule} | `{loc}` | {cond} | **{stat}** |")
 
     if data_arch:
         lines.extend([
@@ -708,21 +802,41 @@ def main():
         description="Digest CodMod assessment reports and Graphify knowledge graphs into vertical migration slices."
     )
     parser.add_argument(
+        "--from-run",
+        type=str,
+        help="Path or name of existing assessment run (e.g. 'latest' or 'assessments/runs/20260909_120000') to auto-discover reports from."
+    )
+    parser.add_argument(
         "--report",
-        required=True,
+        required=False,
         type=Path,
         help="Path to modernization_report.html or codmod assessment JSON."
     )
     parser.add_argument(
         "--graph",
-        required=True,
+        required=False,
         type=Path,
         help="Path to graphify-out/graph.json or directory containing it."
     )
     parser.add_argument(
+        "--seams-report",
+        type=Path,
+        help="Path to seam scout markdown report (e.g. 01_discovery/seam_findings.md)."
+    )
+    parser.add_argument(
+        "--specs-report",
+        type=Path,
+        help="Path to spec recovery markdown report (e.g. 01_discovery/spec_invariants.md)."
+    )
+    parser.add_argument(
+        "--migration-report",
+        type=Path,
+        help="Path to migration scout markdown report (e.g. 01_discovery/migration_strategy.md)."
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("./migration_slices"),
+        default=None,
         help="Target directory to emit migration_matrix.json, 05_PLAN.md, and modernization_dashboard.html."
     )
     parser.add_argument(
@@ -758,6 +872,130 @@ def main():
 
     args = parser.parse_args()
 
+    # Handle --from-run resolution
+    if args.from_run:
+        target = args.from_run
+        base_dir = Path("assessments")
+        runs_dir = base_dir / "runs"
+        run_dir = None
+
+        if target == "latest":
+            latest_link = base_dir / "latest"
+            if latest_link.exists() and latest_link.is_symlink():
+                run_dir = latest_link.resolve()
+            elif runs_dir.exists():
+                entries = [d for d in runs_dir.iterdir() if d.is_dir() and not d.name.startswith(".") and d.name != "latest"]
+                if entries:
+                    entries.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    run_dir = entries[0].resolve()
+        else:
+            p = Path(target).resolve()
+            if p.exists() and p.is_dir():
+                run_dir = p
+            elif (runs_dir / target).exists():
+                run_dir = (runs_dir / target).resolve()
+
+        if not run_dir or not run_dir.exists():
+            sys.stderr.write(f"❌ Could not resolve assessment run for: '{target}'\n")
+            sys.exit(1)
+
+        disc_dir = run_dir / "01_discovery"
+        search_dirs = [disc_dir, run_dir]
+
+        if not args.report:
+            for d in search_dirs:
+                for name in ["codmod_assessment_report.html", "modernization_report.html", "codmod_report.html", "codmod_assessment.json"]:
+                    if (d / name).exists():
+                        args.report = d / name
+                        break
+                if args.report:
+                    break
+
+        if not args.graph:
+            for d in search_dirs:
+                for name in ["graphify_ast_graph.json", "graph.json", "graphify-out/graph.json"]:
+                    if (d / name).exists():
+                        args.graph = d / name
+                        break
+                if args.graph:
+                    break
+
+        if not args.graph_html:
+            for d in search_dirs:
+                for name in ["graphify_ast_interactive.html", "graph.html", "graphify-out/graph.html"]:
+                    if (d / name).exists():
+                        args.graph_html = d / name
+                        break
+                if args.graph_html:
+                    break
+
+        if not args.graph_report:
+            for d in search_dirs:
+                for name in ["graphify_architecture_report.md", "GRAPH_REPORT.md", "graphify-out/GRAPH_REPORT.md"]:
+                    if (d / name).exists():
+                        args.graph_report = d / name
+                        break
+                if args.graph_report:
+                    break
+
+        if not args.seams_report:
+            for d in search_dirs:
+                for name in ["seam_findings.md", "seams.md"]:
+                    if (d / name).exists():
+                        args.seams_report = d / name
+                        break
+                if args.seams_report:
+                    break
+
+        if not args.specs_report:
+            for d in search_dirs:
+                for name in ["spec_invariants.md", "specs.md"]:
+                    if (d / name).exists():
+                        args.specs_report = d / name
+                        break
+                if args.specs_report:
+                    break
+
+        if not args.migration_report:
+            for d in search_dirs:
+                for name in ["migration_strategy.md"]:
+                    if (d / name).exists():
+                        args.migration_report = d / name
+                        break
+                if args.migration_report:
+                    break
+
+        if not args.output_dir:
+            args.output_dir = run_dir
+
+    if not args.report or not args.graph:
+        parser.error("Both --report and --graph are required unless --from-run is specified with an existing run.")
+
+    if not args.output_dir:
+        args.output_dir = Path("./migration_slices")
+
+    # Ingest scout reports if provided
+    seams_data = None
+    if args.seams_report and args.seams_report.exists():
+        try:
+            seams_data = parse_markdown_table_rows(args.seams_report.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"Warning: Could not parse seams report: {e}")
+
+    specs_data = None
+    if args.specs_report and args.specs_report.exists():
+        try:
+            specs_data = parse_markdown_table_rows(args.specs_report.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"Warning: Could not parse specs report: {e}")
+
+    migration_data = None
+    if args.migration_report and args.migration_report.exists():
+        try:
+            migration_data = parse_markdown_table_rows(args.migration_report.read_text(encoding="utf-8"))
+        except Exception as e:
+            print(f"Warning: Could not parse migration report: {e}")
+
     # Parse inputs
     print(f"⚙️  Ingesting CodMod Report: {args.report}")
     codmod_data = parse_codmod_report(args.report)
@@ -767,7 +1005,13 @@ def main():
 
     # Synthesize slices
     print("🔄 Synthesizing dependency-ordered vertical slices...")
-    matrix = synthesize_migration_slices(codmod_data, graph_data)
+    matrix = synthesize_migration_slices(
+        codmod_data,
+        graph_data,
+        seams_data=seams_data,
+        specs_data=specs_data,
+        migration_data=migration_data,
+    )
 
     # Print summary scorecard
     total_mods = matrix.get("total_component_modules", matrix.get("total_communities", 0))

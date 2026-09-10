@@ -5,8 +5,10 @@
 
 ## Skills & Agents:
 - **`assess` (`skills/assess`)**: Parallel orchestrator performing GCP credential checks and concurrently dispatching `@codmod-assessor` and `@graphify-scout` to generate `modernization_report.html` and `graphify-out/` without context bloat.
+- **`synthesize` (`skills/synthesize`)**: Standalone architectural synthesis skill executing or re-running vertical slicing, Feathers' seams reconciliation, and `05_PLAN.md` compilation on existing discovery artifacts without re-running scouts.
 - **`rewrite` (`skills/rewrite`)**: Application rewrite brew protocol: ingesting modernization assessment reports, digesting semantic findings alongside Graphify architecture maps (`scripts/digest_report.py`), mapping source-to-target runtimes, decomposing monolithic systems into vertical execution slices, and running adversarial hardening loops.
 - **`adversarial-review` (`skills/adversarial-review`)**: Multi-persona adversarial review and hardening loop for modernization proposals. Coordinates `@reviewer-exec`, `@reviewer-engineer`, `@reviewer-architect`, `@reviewer-pm`, and `@review-arbiter` to critique and iterate on `05_PLAN.md` until consensus ($\ge 90.0\%$, 0 Critical/High) is achieved.
+- **`@synthesis-agent` (`agents/synthesis-agent.md`)**: Architectural synthesis and plan reconciliation specialist synthesizing discovery reports from CodMod, Graphify, Seam Scout, Spec Recovery, and Migration Scout into domain-driven vertical slices, real Feathers' seams, and actionable Mikado refactoring plans.
 - **`@codmod-assessor` (`agents/codmod-assessor.md`)**: Context-isolated subagent executing `codmod create`, handling intent selection, trapping failures with `codmod collect-logs`, and synthesizing key modernization blockers.
 - **`@graphify-scout` (`agents/graphify-scout.md`)**: Context-isolated subagent executing `graphify . --directed`, validating knowledge graph artifacts, and synthesizing central dependency hubs and component clusters.
 - **`@reviewer-exec` (`agents/reviewer-exec.md`)**: Adversarial executive reviewer auditing TCO, cloud run-rate, licensing sunsets, and rollback RPO/MTD.

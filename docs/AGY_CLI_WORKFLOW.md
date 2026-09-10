@@ -79,8 +79,8 @@ agy plugin validate .
 Expected validation output:
 ```text
   [ok]    .
-          ✔ skills      : 3 processed (assess, rewrite, adversarial-review)
-          ✔ agents      : 13 processed
+          ✔ skills      : 4 processed (assess, synthesize, rewrite, adversarial-review)
+          ✔ agents      : 14 processed
 ```
 
 ---
@@ -121,26 +121,35 @@ When inside the interactive session, invoke the assessment skill:
 
 ---
 
-## 🔍 Step 2: Dual-Lens Synthesis & Digest (`scripts/digest_report.py`)
+## 🔍 Step 2: Architectural Synthesis & Slicing (`skills/synthesize`)
 
-Once both `@codmod-assessor` and `@graphify-scout` conclude their scans, the automated digestion engine reconciles their findings into actionable engineering plans.
+Once discovery scouts conclude their scans, the synthesis engine reconciles their findings into actionable engineering plans.
 
-### Running the Digest Script
-If executing outside of the automated orchestrator, run:
+Synthesis can be invoked automatically by `/assess`, or **executed repeatedly on demand as a standalone step** whenever you want to re-slice domains, incorporate human domain clarifications, or update cloud targets without re-running expensive discovery scouts.
+
+### Running Standalone Synthesis
+
 ```bash
-python3 scripts/digest_report.py \
-  --report modernization_report.html \
-  --graph graphify-out/graph.json \
-  --output-dir plans/modernization/20260909_1400
+# Option A: In the AGY CLI interactive session:
+> /synthesize
+
+# Option B: Run the skill helper script directly:
+python3 skills/synthesize/scripts/synthesize_runner.py --run-dir latest
+
+# Option C: Run digest_report.py with auto-discovery from an existing run:
+python3 scripts/digest_report.py --from-run latest
 ```
+
+You can also dispatch **`@synthesis-agent`** directly within the AGY session to customize vertical slicing boundaries around domain contexts or fold verified business invariants into the acceptance gates of `05_PLAN.md`.
 
 ### Emitted Modernization Artifacts:
 | Artifact | Location | Purpose |
 | :--- | :--- | :--- |
-| **`05_PLAN.md`** | `plans/modernization/.../05_PLAN.md` | Mikado dependency-ordered implementation plan covering Slices 0 to 5. |
-| **`migration_matrix.json`** | `plans/modernization/.../migration_matrix.json` | Machine-readable dataset of 7 Rs strategies, Feathers' seams, and CDC cutover phases. |
-| **`modernization_dashboard.html`** | `plans/modernization/.../modernization_dashboard.html` | Unified 11-tab interactive HTML glass pane. |
-| **`00_visual-dashboard.html`** | `~/.gemini/antigravity/brain/<id>/00_visual-dashboard.html` | Live UI brain mirror for instant side-panel viewing. |
+| **`05_PLAN.md`** | `assessments/runs/.../04_migration_plan/05_PLAN.md` | Mikado dependency-ordered implementation plan covering Slices 0 to 5. |
+| **`migration_matrix.json`** | `assessments/runs/.../02_synthesis/migration_matrix.json` | Machine-readable dataset of 7 Rs strategies, Feathers' seams, and CDC cutover phases. |
+| **`vertical_slices.json`** | `assessments/runs/.../02_synthesis/vertical_slices.json` | Standalone vertical slice definitions. |
+| **`index.html`** | `assessments/runs/.../index.html` | Unified 11-tab interactive HTML glass pane. |
+| **`00_visual-dashboard.html`** | `<appDataDir>/brain/<id>/00_visual-dashboard.html` | Live UI brain mirror for instant side-panel viewing. |
 
 ### Visual: Dual-Lens Subagents & Synthesis Architecture
 

@@ -143,5 +143,5 @@ Call `invoke_subagent` with the following configuration:
    - **Dashboard Link**: Clickable link to [assessments/index.html](file:///home/robedwards/workspace/bean-grinder/assessments/index.html) (or `00_visual-dashboard.html`).
 
 2. **Recommend Next Action**:
-   Prompt the user to review the generated plan and initiate adversarial hardening:
-   > "Assessment complete. Review [05_PLAN.md](file:///home/robedwards/workspace/bean-grinder/assessments/runs/latest/04_migration_plan/05_PLAN.md) and run `/adversarial-review` to stress-test the migration architecture."
+   Prompt the user to review the generated plan, adjust synthesis if desired, or initiate adversarial hardening:
+   > "Assessment complete. Review [05_PLAN.md](file:///home/robedwards/workspace/bean-grinder/assessments/runs/latest/04_migration_plan/05_PLAN.md). You can re-run synthesis with `/synthesize` (or dispatch `@synthesis-agent` to tailor slices and clarify invariants), or run `/adversarial-review` to stress-test the migration architecture."
