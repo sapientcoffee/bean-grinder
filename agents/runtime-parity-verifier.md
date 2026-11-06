@@ -7,10 +7,9 @@ mainAgent: false
 model: inherit
 commandExecutionPolicy: sandbox
 tools:
-  - view_file
-  - write_to_file
+  - read_file
+  - write_file
   - run_command
-  - grep_search
 ---
 
 <!--

@@ -507,7 +507,6 @@ def synthesize_migration_slices(
         })
 
     # Build Feathers' Seams & Decoupling inventory
-    # Build Feathers' Seams & Decoupling inventory
     if seams_data:
         empirical_seams = []
         for row in seams_data:
@@ -1118,26 +1117,44 @@ def main():
         if not args.no_dashboard:
             try:
                 from scripts.generate_dashboard import generate_modernization_dashboard
+                generate_modernization_dashboard(
+                    matrix_data=matrix,
+                    codmod_data=codmod_data,
+                    graph_data=graph_data,
+                    output_dir=args.output_dir,
+                    codmod_report_path=effective_report,
+                    graph_html_path=effective_graph_html,
+                    graph_report_path=effective_graph_report,
+                    plan_path=stage_plan_path,
+                    brain_dir=args.brain_dir,
+                    mirror=not args.no_mirror,
+                )
             except ImportError:
-                try:
-                    from generate_dashboard import generate_modernization_dashboard
-                except ImportError:
-                    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-                    from scripts.generate_dashboard import generate_modernization_dashboard
-            generate_modernization_dashboard(
-                matrix_data=matrix,
-                codmod_data=codmod_data,
-                graph_data=graph_data,
-                output_dir=args.output_dir,
-                codmod_report_path=effective_report,
-                graph_html_path=effective_graph_html,
-                graph_report_path=effective_graph_report,
-                plan_path=stage_plan_path,
-                brain_dir=args.brain_dir,
-                mirror=not args.no_mirror,
-            )
+                pass
+            if args.brain_dir and not args.no_mirror:
+                import shutil
+                brain_path = Path(args.brain_dir)
+                brain_path.mkdir(parents=True, exist_ok=True)
+                mirror_map = [
+                    (effective_report, "01_codmod-assessment.html", "Google Cloud CodMod modernization assessment report detailing intent recipes, modernization blockers, and flagged files."),
+                    (effective_graph_report, "01_graphify-architecture.md", "Graphify AST architectural topology report detailing component modules, central dependency hubs, and coupling metrics."),
+                    (destinations.get("seams_report"), "01_seam-findings.md", "Michael Feathers Seam Discovery inventory mapping Object, Link, and Preprocessor seams."),
+                    (destinations.get("specs_report"), "01_spec-invariants.md", "Specification archaeology report recovering domain rules and flagging ambiguous specifications."),
+                    (destinations.get("migration_report"), "01_migration-strategy.md", "Migration strategy and 7 Rs portfolio rationalization matrix."),
+                    (stage_plan_path, "05_plan.md", "OKF-compatible modernization implementation plan."),
+                    (stage_matrix_path, "migration_matrix.json", "Synthesized migration matrix and vertical slices."),
+                ]
+                for src, dst_name, summary in mirror_map:
+                    if src and Path(src).exists():
+                        dst_file = brain_path / dst_name
+                        shutil.copy2(src, dst_file)
+                        meta_file = brain_path / f"{dst_name}.metadata.json"
+                        meta_file.write_text(json.dumps({
+                            "summary": summary,
+                            "userFacing": True,
+                            "requestFeedback": False,
+                        }, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
     main()
-

@@ -1,7 +1,7 @@
 {
   "name": "bean-grinder",
-  "version": "1.0.2",
-  "description": "Code Modernization, AST Transformations, and Migration Forge: Powers codmod assessments, parity rewrites, and framework upgrades.",
+  "version": "1.0.0",
+  "description": "Codebase Modernization, Migration, and AST Transformation Engine for Antigravity SDLC pipelines.",
   "author": {
     "name": "sapientcoffee"
   },

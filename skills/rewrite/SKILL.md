@@ -1,6 +1,6 @@
 ---
 name: rewrite
-description: Orchestrates an end-to-end legacy application rewrite and cloud modernization lifecycle. Guides ingestion of assessment findings, specification recovery, vertical slicing, adversarial review, incremental refactoring, and runtime parity verification. Use this skill when the user asks to plan, orchestrate, or execute a comprehensive application rewrite, legacy migration, or full modernization lifecycle.
+description: Orchestrates an end-to-end legacy application rewrite and cloud modernization lifecycle. Guides ingestion of assessment findings, specification recovery, vertical slicing into an OKF-compatible 05_PLAN.md, adversarial review, incremental refactoring, and runtime parity verification. Use this skill when the user asks to plan, orchestrate, or execute a comprehensive application rewrite, legacy migration, or full modernization lifecycle.
 ---
 
 # Skill: Application Rewrite Orchestrator
@@ -27,7 +27,7 @@ flowchart TD
 
     subgraph P4["Phase 4: Vertical Slicing"]
         C3 --> D1["Decompose Monolith into Slices<br/>(Slice 0 to N)"]
-        D1 --> D2["Draft 05_PLAN.md with Mikado DAG"]
+        D1 --> D2["Draft OKF-compatible 05_PLAN.md with Mikado DAG"]
     end
 
     subgraph P5["Phase 5: Adversarial Review"]
@@ -52,7 +52,7 @@ flowchart TD
 
 ### Phase 1: Ingest Assessment Deliverables
 1. **Verify Assessment Artifacts**:
-   - Check if an assessment run exists under `assessments/runs/latest/` or `assessments/index.html`.
+   - Check if an assessment run exists under `assessments/runs/latest/`.
    - If no assessment run is found, instruct the user to run the `assess` skill first, or invoke it to generate discovery artifacts.
 2. **Extract Key Constraints**:
    - Identify legacy source stack, language version, and build system.
@@ -64,10 +64,10 @@ flowchart TD
 
 ### Phase 2: Specification Archaeology & Ubiquitous Language
 1. **Extract Domain Rules & Invariants**:
-   - Inspect legacy controllers, entity models, and business services using `view_file` and `grep_search`.
+   - Inspect legacy controllers, entity models, and business services using `read_file`.
    - Reconstruct database schemas, primary keys, foreign key constraints, and indexing strategies.
 2. **Compile Domain Glossary**:
-   - Write domain definitions, business rules, and API contracts into `docs/glossary.md`.
+   - Write domain definitions, business rules, and API contracts into `docs/glossary.md` using `write_file` or `edit_file`.
    - If implicit, contradictory, or undocumented behaviors are found, record them as `[AMBIGUOUS_SPEC: <description>]` and clarify with the user before proceeding to implementation.
 
 ---
@@ -91,8 +91,8 @@ flowchart TD
      - **Slice 1 (Read-Only Path):** Legacy read API replication and contract characterization tests.
      - **Slice 2 (State Mutation & Outbox):** Write paths, transactional outbox events, and validation logic.
      - **Slice 3 (Integration & Cutover):** Edge routing, Strangler Fig proxying, and reverse-sync.
-2. **Compile `05_PLAN.md`**:
-   - Detail tasks, acceptance criteria, file targets, and rollback procedures.
+2. **Compile OKF-Compatible `05_PLAN.md`**:
+   - Detail tasks (tagged with `[Serial]` or `[Parallel]`), acceptance criteria, file targets, and rollback procedures in an OKF-compatible `05_PLAN.md`.
    - *Tip:* Run the `/synthesize` skill or invoke `@synthesis-agent` to automatically generate or iterate on these slices from existing discovery findings.
 
 ---
@@ -101,7 +101,7 @@ flowchart TD
 1. **Invoke Review Skill**:
    - Call the `adversarial-review` skill to audit `05_PLAN.md` against Executive, Engineering, Architectural, and Product criteria.
 2. **Iterate to Convergence**:
-   - Review and incorporate directives from `@review-arbiter` until the consensus score reaches $\ge 90\%$ with 0 Critical and 0 High defects.
+   - Review and incorporate directives from `@review-arbiter` (from `bean-core`) until the consensus score reaches $\ge 90\%$ with 0 Critical and 0 High defects.
    - Present the hardened plan to the user for formal approval before modifying code.
 
 ---
@@ -109,7 +109,7 @@ flowchart TD
 ### Phase 6: Incremental Implementation & Runtime Parity Verification
 1. **Implement Slices Incrementally**:
    - Write characterization test fixtures capturing legacy inputs and outputs.
-   - Generate target code using `write_to_file` and `replace_file_content`.
+   - Generate target code using `write_file` and `edit_file`.
    - Execute local build and test commands using `run_command` in sandboxed terminals.
 2. **Dynamic Parity Verification**:
    - For each completed vertical slice, invoke `@runtime-parity-verifier` using `invoke_subagent`.
@@ -122,4 +122,4 @@ flowchart TD
 1. **Emit Modernization Manifest**:
    - Update `assessments/runs/latest/run_manifest.json` with final implementation status, test metrics, and parity diffs.
 2. **Present Walkthrough**:
-   - Provide the user with a summary of delivered slices, verified parity results, and links to the updated dashboard and code changes.
+   - Provide the user with a summary of delivered slices, verified parity results, and links to the code changes.

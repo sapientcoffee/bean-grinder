@@ -55,10 +55,14 @@ try:
         generate_plan_markdown,
     )
     from scripts.run_manager import RunManager, STAGE_DIRS
-    from scripts.generate_dashboard import generate_modernization_dashboard
 except ImportError as e:
     sys.stderr.write(f"❌ Failed to import bean-grinder engines from {REPO_ROOT}: {e}\n")
     sys.exit(1)
+
+try:
+    from scripts.generate_dashboard import generate_modernization_dashboard
+except ImportError:
+    generate_modernization_dashboard = None
 
 
 def resolve_run_dir(base_dir: Path, target_run: Optional[str] = None) -> Path:
@@ -338,8 +342,8 @@ def run_synthesis(
         }
     )
 
-    # Generate / refresh dashboard
-    if not no_dashboard:
+    # Generate / refresh dashboard if available
+    if not no_dashboard and generate_modernization_dashboard is not None:
         generate_modernization_dashboard(
             matrix_data=matrix,
             codmod_data=codmod_data,

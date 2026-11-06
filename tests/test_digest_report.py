@@ -186,8 +186,9 @@ class TestDigestReport(unittest.TestCase):
             graph_data = parse_graphify_graph(real_graph)
             matrix = synthesize_migration_slices(codmod_data, graph_data)
 
-    def test_main_emits_dashboard(self):
+    def test_main_emits_plan_and_matrix(self):
         import subprocess
+        repo_root = Path(__file__).resolve().parent.parent
         out_dir = self.tmp_path / "out_slices"
         cmd = [
             sys.executable,
@@ -197,25 +198,20 @@ class TestDigestReport(unittest.TestCase):
             "--output-dir", str(out_dir),
             "--no-mirror"
         ]
-        res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+        res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(repo_root))
         self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
-        self.assertTrue((out_dir / "index.html").exists())
         self.assertTrue((out_dir / "migration_matrix.json").exists())
         self.assertTrue((out_dir / "05_PLAN.md").exists())
-        self.assertTrue((out_dir / "modernization_dashboard.html").exists())
-        self.assertTrue((out_dir / "visual-dashboard.html").exists())
         self.assertTrue((out_dir / "run_manifest.json").exists())
         self.assertTrue((out_dir / "01_discovery" / "codmod_assessment_report.html").exists())
         self.assertTrue((out_dir / "01_discovery" / "graphify_ast_graph.json").exists())
         self.assertTrue((out_dir / "02_synthesis" / "migration_matrix.json").exists())
         self.assertTrue((out_dir / "02_synthesis" / "vertical_slices.json").exists())
         self.assertTrue((out_dir / "04_migration_plan" / "05_PLAN.md").exists())
-        dash_content = (out_dir / "index.html").read_text(encoding="utf-8")
-        self.assertIn("Unified Modernization Dashboard", dash_content)
-        self.assertIn("tab-scorecard", dash_content)
 
     def test_discovery_artifacts_and_brain_mirroring(self):
         """Verify discovery scout outputs are organized and mirrored to AGY brain artifacts."""
+        repo_root = Path(__file__).resolve().parent.parent
         out_dir = self.tmp_path / "out_discovery_test"
         brain_dir = self.tmp_path / "mock_brain"
         brain_dir.mkdir(parents=True, exist_ok=True)
@@ -253,7 +249,7 @@ class TestDigestReport(unittest.TestCase):
             "--output-dir", str(out_dir),
             "--brain-dir", str(brain_dir),
         ]
-        res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+        res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(repo_root))
         self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
 
         # Check organized discovery files in run dir
@@ -265,9 +261,8 @@ class TestDigestReport(unittest.TestCase):
         self.assertTrue((disc_dir / "spec_invariants.md").exists())
         self.assertTrue((disc_dir / "migration_strategy.md").exists())
 
-        # Check mirrored AGY artifacts in brain dir
+        # Check mirrored AGY artifacts in brain dir (no 00_visual-dashboard.html dual-write mandate)
         expected_artifacts = [
-            "00_visual-dashboard.html",
             "01_codmod-assessment.html",
             "01_graphify-architecture.md",
             "01_seam-findings.md",
