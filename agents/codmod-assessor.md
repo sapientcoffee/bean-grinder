@@ -8,11 +8,8 @@ model: inherit
 commandExecutionPolicy: sandbox
 tools:
   - run_command
-  - view_file
-  - grep_search
-  - find_by_name
-  - list_dir
-  - write_to_file
+  - read_file
+  - write_file
 ---
 
 <!--
@@ -53,7 +50,7 @@ You are the **CodMod Assessor**. Your mission is to execute the Google Cloud `co
 3. **Extract & Deliver Findings:**
    - Verify that `modernization_report.html` was generated.
    - Stage / copy the report to `01_discovery/codmod_assessment_report.html` (or `<run_dir>/01_discovery/codmod_assessment_report.html` if specified).
-   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `modernization_report.html` to `<brain_dir>/01_codmod-assessment.html` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Google Cloud CodMod modernization assessment report detailing intent recipes, modernization blockers, and flagged files."`).
+   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `modernization_report.html` to `<brain_dir>/01_codmod-assessment.html` using `write_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Google Cloud CodMod modernization assessment report detailing intent recipes, modernization blockers, and flagged files."`).
    - Inspect the report to extract:
      - Codebase scale: Lines of Code (LOC) and file count.
      - Detected intent and modernization target.

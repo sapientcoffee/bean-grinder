@@ -8,11 +8,8 @@ model: inherit
 commandExecutionPolicy: sandbox
 tools:
   - run_command
-  - view_file
-  - grep_search
-  - find_by_name
-  - list_dir
-  - write_to_file
+  - read_file
+  - write_file
 ---
 
 <!--
@@ -39,7 +36,7 @@ You are the **Graphify Scout**. Your mission is to perform architectural depende
 2. **Extract & Deliver Topological Findings:**
    - Inspect `graphify-out/GRAPH_REPORT.md` or parse `graphify-out/graph.json` to extract metrics.
    - Stage / copy `graphify-out/GRAPH_REPORT.md` to `01_discovery/graphify_architecture_report.md` (or `<run_dir>/01_discovery/graphify_architecture_report.md` if specified).
-   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `graphify-out/GRAPH_REPORT.md` to `<brain_dir>/01_graphify-architecture.md` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Graphify AST architectural topology report detailing component modules, central dependency hubs, and coupling metrics."`).
+   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also mirror `graphify-out/GRAPH_REPORT.md` to `<brain_dir>/01_graphify-architecture.md` using `write_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Graphify AST architectural topology report detailing component modules, central dependency hubs, and coupling metrics."`).
 
 3. **Structured Return Payload:**
    Return a concise structured Markdown block to the parent agent:

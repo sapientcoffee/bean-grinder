@@ -249,7 +249,8 @@ Remediation: Parallelize slice tests.
                 "--plan-dir", str(plan_dir),
                 "--simulate-round", "1"
             ]
-            res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+            repo_root = Path(__file__).resolve().parent.parent
+            res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(repo_root))
             self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
 
             # Verify artifacts in 03_adversarial_review/
@@ -265,4 +266,3 @@ Remediation: Parallelize slice tests.
 
 if __name__ == "__main__":
     unittest.main()
-

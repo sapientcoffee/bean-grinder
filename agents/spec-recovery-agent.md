@@ -6,11 +6,8 @@ subagent: true
 mainAgent: false
 model: inherit
 tools:
-  - view_file
-  - grep_search
-  - find_by_name
-  - list_dir
-  - write_to_file
+  - read_file
+  - write_file
 ---
 
 <!--
@@ -45,7 +42,7 @@ You are the **Specification Recovery & Archaeology Specialist**. Your mission is
 1. **Primary Output File:**
    - Write the full specification archaeology report to `01_discovery/spec_invariants.md` (or `<run_dir>/01_discovery/spec_invariants.md` if specified).
 2. **Antigravity (AGY) Artifact:**
-   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also write the specifications to `<brain_dir>/01_spec-invariants.md` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Specification archaeology report recovering domain rules, state machines, and flagging ambiguous specifications requiring human review."`).
+   - If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also write the specifications to `<brain_dir>/01_spec-invariants.md` using `write_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Specification archaeology report recovering domain rules, state machines, and flagging ambiguous specifications requiring human review."`).
 3. **Structured Return Payload:**
    - Return a concise summary to the parent agent with rule count, ambiguous invariant count, and output file paths.
 

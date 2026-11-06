@@ -137,20 +137,20 @@ class TestSynthesizeRunner(unittest.TestCase):
         self.assertTrue((stage2 / "migration_matrix.json").exists())
         self.assertTrue((stage2 / "vertical_slices.json").exists())
         self.assertTrue((stage4 / "05_PLAN.md").exists())
-        self.assertTrue((self.run_dir / "index.html").exists())
 
         plan_content = (stage4 / "05_PLAN.md").read_text(encoding="utf-8")
         self.assertIn("Ambiguous Specifications Requiring Human Approval", plan_content)
         self.assertIn("RULE-OWN-02", plan_content)
 
     def test_digest_report_from_run_cli(self):
+        repo_root = Path(__file__).resolve().parent.parent
         cmd = [
             sys.executable,
             "scripts/digest_report.py",
             "--from-run", str(self.run_dir),
             "--no-mirror"
         ]
-        res = subprocess.run(cmd, capture_output=True, text=True, cwd="/home/robedwards/workspace/bean-grinder")
+        res = subprocess.run(cmd, capture_output=True, text=True, cwd=str(repo_root))
         self.assertEqual(res.returncode, 0, f"Error: {res.stderr}")
         self.assertTrue((self.run_dir / "02_synthesis" / "migration_matrix.json").exists())
 

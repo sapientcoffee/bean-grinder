@@ -6,11 +6,8 @@ subagent: true
 mainAgent: false
 model: inherit
 tools:
-  - view_file
-  - grep_search
-  - find_by_name
-  - list_dir
-  - write_to_file
+  - read_file
+  - write_file
 ---
 
 <!--
@@ -49,10 +46,9 @@ You are the **Migration Scout**. Your mission is to perform comprehensive, non-i
 
 4. **Output Format & Delivery:**
    - **Primary Output File:** Write the complete rationalization report to `01_discovery/migration_strategy.md` (or `<run_dir>/01_discovery/migration_strategy.md` if specified).
-   - **Antigravity (AGY) Artifact:** If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also write the report to `<brain_dir>/01_migration-strategy.md` using `write_to_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Migration strategy and 7 Rs portfolio rationalization matrix mapping legacy runtimes to target Google Cloud architecture."`).
+   - **Antigravity (AGY) Artifact:** If an artifact directory or brain path is provided (e.g., `<appDataDir>/brain/<conversation-id>/`), also write the report to `<brain_dir>/01_migration-strategy.md` using `write_file` with `ArtifactMetadata` (`UserFacing: true`, `RequestFeedback: false`, `Summary: "Migration strategy and 7 Rs portfolio rationalization matrix mapping legacy runtimes to target Google Cloud architecture."`).
    - **Summary Return Payload:** Provide a clean structured Markdown summary containing:
      - File counts and Lines of Code (LOC) estimate.
      - Primary languages, runtime versions, and End-of-Life (EOL) statuses detected.
      - Discovered 7 Rs matrix.
      - Output file paths.
-

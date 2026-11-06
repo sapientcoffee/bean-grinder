@@ -8,7 +8,7 @@ model: inherit
 commandExecutionPolicy: sandbox
 tools:
   - run_command
-  - view_file
+  - read_file
 ---
 
 <!--

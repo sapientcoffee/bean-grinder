@@ -15,8 +15,8 @@
 
 """
 Agent Schema and Frontmatter Test Suite.
-Validates all agent markdown files in agents/ for required YAML frontmatter fields
-and non-empty markdown definitions.
+Validates all 13 agent markdown files in agents/ for required YAML frontmatter fields,
+normalized tool names, and non-empty markdown definitions.
 """
 
 import os
@@ -38,14 +38,16 @@ class TestAgentsSchema(unittest.TestCase):
     def test_agents_directory_exists(self):
         self.assertTrue(os.path.exists(self.agents_dir), f"Agents directory not found at {self.agents_dir}")
 
-    def test_all_agents_have_valid_frontmatter_and_content(self):
+    def test_all_agents_have_valid_frontmatter_and_normalized_tools(self):
         agent_files = [
             f for f in os.listdir(self.agents_dir)
             if f.endswith(".md") and not f.startswith(".")
         ]
-        self.assertGreaterEqual(len(agent_files), 6, "Expected at least 6 agents in agents/")
+        self.assertEqual(len(agent_files), 13, "Expected exactly 13 agents in agents/")
 
         required_fields = ["name", "description", "kind", "tools", "model"]
+        allowed_tools = {"read_file", "write_file", "edit_file", "run_command"}
+        forbidden_tools = {"view_file", "write_to_file", "replace_file_content", "grep_search", "find_by_name", "list_dir"}
 
         for agent_file in sorted(agent_files):
             agent_path = os.path.join(self.agents_dir, agent_file)
@@ -78,18 +80,26 @@ class TestAgentsSchema(unittest.TestCase):
                     self.assertIn(field, data, f"Frontmatter in {agent_path} missing required field '{field}'")
                     self.assertTrue(data[field], f"Field '{field}' in {agent_path} cannot be empty")
 
-                self.assertIsInstance(data["tools"], list, f"'tools' in {agent_path} must be a list")
-                self.assertGreater(len(data["tools"]), 0, f"'tools' in {agent_path} cannot be empty")
+                self.assertIs(data.get("subagent"), True)
+                self.assertIs(data.get("mainAgent"), False)
+                self.assertEqual(data.get("model"), "inherit")
+
+                tools = data["tools"]
+                self.assertIsInstance(tools, list, f"'tools' in {agent_path} must be a list")
+                self.assertGreater(len(tools), 0, f"'tools' in {agent_path} cannot be empty")
+                for t in tools:
+                    self.assertNotIn(t, forbidden_tools, f"Legacy tool '{t}' found in {agent_file}")
+                    self.assertIn(t, allowed_tools, f"Unexpected tool '{t}' in {agent_file}")
+
                 self.assertGreater(len(body), 50, f"Markdown body in {agent_path} is too short")
 
-    def test_expected_agents_present(self):
-        expected = [
+    def test_expected_13_agents_present_and_removed_absent(self):
+        expected = {
             "ast-grinder.md",
             "codmod-assessor.md",
             "graphify-scout.md",
             "migration-scout.md",
             "msbuild.md",
-            "review-arbiter.md",
             "reviewer-architect.md",
             "reviewer-engineer.md",
             "reviewer-exec.md",
@@ -98,10 +108,12 @@ class TestAgentsSchema(unittest.TestCase):
             "seam-scout.md",
             "spec-recovery-agent.md",
             "synthesis-agent.md",
-        ]
-        present = set(os.listdir(self.agents_dir))
-        for exp in expected:
-            self.assertIn(exp, present, f"Missing expected agent file: {exp}")
+        }
+        present = {f for f in os.listdir(self.agents_dir) if f.endswith(".md")}
+        self.assertEqual(present, expected)
+        self.assertNotIn("review-arbiter.md", present)
+        self.assertFalse(os.path.exists(os.path.join(self.repo_root, "scripts", "generate_dashboard.py")))
+        self.assertFalse(os.path.exists(os.path.join(self.repo_root, "gemini-extension.json")))
 
 
 if __name__ == "__main__":
