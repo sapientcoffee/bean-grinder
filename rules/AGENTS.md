@@ -8,7 +8,7 @@ All local subagents in `agents/*.md` use `kind: local`, `subagent: true`, `mainA
 - **Shared Core Arbiter:** `review-arbiter` is provided by `bean-core`.
 
 ## Skills
-- `assess`: Runs concurrent discovery scouts and invokes `scripts/digest_report.py` to emit `migration_matrix.json` and an OKF-compatible `05_PLAN.md`.
+- `assess`: Runs concurrent discovery scouts as isolated `invoke_subagent` calls (never `/teamwork`, keeping Stage 1 discovery unbiased) and invokes `scripts/digest_report.py` to emit `migration_matrix.json` and an OKF-compatible `05_PLAN.md`.
 - `synthesize`: Runs `skills/synthesize/scripts/synthesize_runner.py` and optional `@synthesis-agent` customization to emit `05_PLAN.md`.
-- `adversarial-review`: Dispatches the 4 reviewer personas and runs `scripts/review_loop.py` to harden `05_PLAN.md`.
-- `rewrite`: Orchestrates the full 7-phase legacy modernization and parity verification lifecycle.
+- `adversarial-review`: Supports Mode A (Hub-and-Spoke `invoke_subagent` dispatch) and Mode B (Antigravity Enterprise `/teamwork` Autonomous Stakeholder Council with `@synthesis-agent`, `@reviewer-exec`, `@reviewer-architect`, `@reviewer-pm`, `@reviewer-engineer`, and `@review-arbiter` debating via `send_message`) plus `scripts/review_loop.py` to harden `05_PLAN.md`.
+- `rewrite`: Orchestrates the full 7-phase legacy modernization lifecycle in the Smart Zone by delegating Phases 2–6 to subagents (`@spec-recovery-agent`, `@seam-scout`, `@synthesis-agent`, `@ast-grinder`, `@runtime-parity-verifier`) and recommending `/teamwork` for Phase 5 adversarial plan hardening and Phase 6 parallel slice implementation (`@ast-grinder` + `@runtime-parity-verifier`).

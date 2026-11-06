@@ -98,6 +98,48 @@ class TestSkillsSchema(unittest.TestCase):
                     f"'description' field in {skill_md_path} cannot be empty"
                 )
 
+    def test_adversarial_review_skill_supports_enterprise_teamwork_mode(self):
+        adv_skill_path = os.path.join(self.skills_dir, "adversarial-review", "SKILL.md")
+        with open(adv_skill_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("Mode A: Hub-and-Spoke Concurrent Dispatch (`invoke_subagent`)", content)
+        self.assertIn("Mode B: Antigravity Enterprise `/teamwork` Autonomous Stakeholder Council", content)
+        self.assertIn("@synthesis-agent", content)
+        self.assertIn("@reviewer-exec", content)
+        self.assertIn("@reviewer-architect", content)
+        self.assertIn("@reviewer-pm", content)
+        self.assertIn("@reviewer-engineer", content)
+        self.assertIn("@review-arbiter", content)
+        self.assertIn("send_message", content)
+        self.assertIn("In-Process Modular Monolith Facade", content)
+        self.assertIn("Legacy Quirk Adapter Envelope", content)
+        self.assertIn("Phased Criticality Slicing", content)
+
+    def test_rewrite_and_assess_skills_enforce_subagent_delegation_and_teamwork_guidance(self):
+        rewrite_skill_path = os.path.join(self.skills_dir, "rewrite", "SKILL.md")
+        with open(rewrite_skill_path, "r", encoding="utf-8") as f:
+            rewrite_content = f.read()
+
+        for agent in [
+            "@spec-recovery-agent",
+            "@seam-scout",
+            "@synthesis-agent",
+            "@ast-grinder",
+            "@runtime-parity-verifier",
+        ]:
+            self.assertIn(agent, rewrite_content, f"Expected {agent} delegation in rewrite/SKILL.md")
+
+        self.assertIn("/teamwork", rewrite_content)
+        self.assertIn("Smart Zone", rewrite_content)
+
+        assess_skill_path = os.path.join(self.skills_dir, "assess", "SKILL.md")
+        with open(assess_skill_path, "r", encoding="utf-8") as f:
+            assess_content = f.read()
+
+        self.assertIn("/teamwork", assess_content)
+        self.assertIn("unbiased", assess_content)
+
 
 if __name__ == "__main__":
     unittest.main()

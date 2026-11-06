@@ -48,6 +48,32 @@ flowchart TD
 
 ---
 
+## Execution Topologies (Antigravity Enterprise)
+
+`adversarial-review` supports two execution topologies depending on modernization complexity and blast radius:
+
+### Mode A: Hub-and-Spoke Concurrent Dispatch (`invoke_subagent`)
+Standard automated 4-reviewer parallel dispatch (`@reviewer-exec`, `@reviewer-engineer`, `@reviewer-architect`, `@reviewer-pm`) + `scripts/review_loop.py` + `@review-arbiter`. Recommended for standard Cortado/Carafe assessments and routine plan hardening.
+
+### Mode B: Antigravity Enterprise `/teamwork` Autonomous Stakeholder Council
+Recommended for complex legacy rewrites and high-blast-radius Carafe modernizations where stakeholder incentives directly conflict:
+- **Team Roster**:
+  - `@synthesis-agent` (Plan Owner)
+  - `@reviewer-exec` (TCO / RPO / Licensing)
+  - `@reviewer-architect` (Hubs / ACL / Outbox CDC)
+  - `@reviewer-pm` (1:1 Parity / Legacy Quirks)
+  - `@reviewer-engineer` (AST Safety / Test Fixtures)
+  - `@review-arbiter` (Consensus Chair)
+- **Peer-to-Peer Conflict Resolution Protocol**:
+  1. Peers debate the three canonical modernization trade-offs directly via `send_message`:
+     - **Exec vs. Architect** $\rightarrow$ **In-Process Modular Monolith Facade** (decouple Central Dependency Hubs in-process first before incurring microservice network/cloud run-rate).
+     - **PM vs. Engineer** $\rightarrow$ **Legacy Quirk Adapter Envelope** (preserve quirky 1:1 external API payloads in a versioned edge adapter while keeping core domain AST/code clean).
+     - **Exec vs. PM** $\rightarrow$ **Phased Criticality Slicing** (protect RPO/MTD and licensing sunsets on Tier-1 slices while scheduling long-tail legacy parity features into subsequent slices).
+  2. `@synthesis-agent` updates `05_PLAN.md` live as consensus resolutions are reached.
+  3. `scripts/review_loop.py` certifies $\text{Score} \ge 90\%$ with $0$ Critical and $0$ High findings before `@review-arbiter` closes the council.
+
+---
+
 ## Operational Protocol
 
 ### Prerequisites & Required Inputs
