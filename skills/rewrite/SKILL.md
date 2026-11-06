@@ -63,24 +63,23 @@ flowchart TD
 ---
 
 ### Phase 2: Specification Archaeology & Ubiquitous Language
+To keep the main orchestrator in the **Smart Zone (< 100K tokens)**, never inspect legacy controllers or reconstruct schemas inline. Delegate archaeology to subagents:
 1. **Extract Domain Rules & Invariants**:
-   - Inspect legacy controllers, entity models, and business services using `read_file`.
-   - Reconstruct database schemas, primary keys, foreign key constraints, and indexing strategies.
+   - Dispatch `@spec-recovery-agent` via `invoke_subagent` (`Model: "inherit"`) to inspect legacy controllers, entity models, and business services and emit `01_discovery/spec_invariants.md`.
 2. **Compile Domain Glossary**:
-   - Write domain definitions, business rules, and API contracts into `docs/glossary.md` using `write_file` or `edit_file`.
-   - If implicit, contradictory, or undocumented behaviors are found, record them as `[AMBIGUOUS_SPEC: <description>]` and clarify with the user before proceeding to implementation.
+   - Have `@spec-recovery-agent` synthesize domain definitions, business rules, and API contracts into `docs/glossary.md`, flagging any implicit or contradictory behaviors as `[AMBIGUOUS_SPEC: <description>]`. Clarify `[AMBIGUOUS_SPEC]` items with the user before proceeding.
 
 ---
 
 ### Phase 3: Target Domain Architecture & Structural Decoupling
+Delegate structural seam analysis and specification authoring to keep the orchestrator in the **Smart Zone**:
 1. **Define Bounded Contexts & Anti-Corruption Layers (ACLs)**:
-   - Separate disparate domain models into isolated packages or services.
-   - Place Anti-Corruption Layers or Facades in front of legacy Central Dependency Hubs to prevent monolithic coupling leaks.
+   - Dispatch `@seam-scout` via `invoke_subagent` (`Model: "inherit"`) to identify Object, Link, and Preprocessor seams around legacy Central Dependency Hubs and design Anti-Corruption Layers (ACLs).
 2. **Data Consistency Strategy**:
    - Do not use distributed 2PC transactions or application-level dual writes.
    - Employ the **Transactional Outbox Pattern** combined with Change Data Capture (CDC) or event messaging.
 3. **Compile Technical Specification**:
-   - Document target APIs, entity definitions, IAM roles, and cloud resource requirements in `04_SPEC.md`.
+   - Dispatch `@synthesis-agent` via `invoke_subagent` (`Model: "inherit"`) to document target APIs, entity definitions, IAM roles, and cloud resource requirements in `04_SPEC.md`.
 
 ---
 
@@ -92,14 +91,14 @@ flowchart TD
      - **Slice 2 (State Mutation & Outbox):** Write paths, transactional outbox events, and validation logic.
      - **Slice 3 (Integration & Cutover):** Edge routing, Strangler Fig proxying, and reverse-sync.
 2. **Compile OKF-Compatible `05_PLAN.md`**:
-   - Detail tasks (tagged with `[Serial]` or `[Parallel]`), acceptance criteria, file targets, and rollback procedures in an OKF-compatible `05_PLAN.md`.
-   - *Tip:* Run the `/synthesize` skill or invoke `@synthesis-agent` to automatically generate or iterate on these slices from existing discovery findings.
+   - Run the `/synthesize` skill or dispatch `@synthesis-agent` via `invoke_subagent` (`Model: "inherit"`) to generate and iterate on dependency-ordered vertical slices (tagged with `[Serial]` or `[Parallel]`), acceptance criteria, file targets, and rollback procedures in an OKF-compatible `05_PLAN.md`.
 
 ---
 
 ### Phase 5: Adversarial Review Loop
 1. **Invoke Review Skill**:
    - Call the `adversarial-review` skill to audit `05_PLAN.md` against Executive, Engineering, Architectural, and Product criteria.
+   - **When to Recommend `/teamwork`**: For complex legacy rewrites and high-blast-radius Carafe modernizations with conflicting stakeholder trade-offs, recommend running `adversarial-review` in **Mode B: Antigravity Enterprise `/teamwork` Autonomous Stakeholder Council** (`@synthesis-agent`, `@reviewer-exec`, `@reviewer-architect`, `@reviewer-pm`, `@reviewer-engineer`, and `@review-arbiter` debating directly via `send_message`).
 2. **Iterate to Convergence**:
    - Review and incorporate directives from `@review-arbiter` (from `bean-core`) until the consensus score reaches $\ge 90\%$ with 0 Critical and 0 High defects.
    - Present the hardened plan to the user for formal approval before modifying code.
@@ -107,13 +106,12 @@ flowchart TD
 ---
 
 ### Phase 6: Incremental Implementation & Runtime Parity Verification
-1. **Implement Slices Incrementally**:
-   - Write characterization test fixtures capturing legacy inputs and outputs.
-   - Generate target code using `write_file` and `edit_file`.
-   - Execute local build and test commands using `run_command` in sandboxed terminals.
+Never edit application source code inline from the main orchestrator. Delegate slice execution and parity verification to subagents:
+1. **Implement Slices via Subagent Delegation**:
+   - Dispatch `@ast-grinder` (and `@msbuild` for .NET workloads) via `invoke_subagent` (`Model: "inherit"`) to write characterization test fixtures, execute AST-safe code transformations, and run sandboxed builds/tests.
 2. **Dynamic Parity Verification**:
-   - For each completed vertical slice, invoke `@runtime-parity-verifier` using `invoke_subagent`.
-   - Replay test vectors against both the legacy endpoint and the modernized candidate.
+   - For each completed vertical slice, dispatch `@runtime-parity-verifier` via `invoke_subagent` (`Model: "inherit"`) to replay test vectors against both the legacy endpoint and the modernized candidate.
+   - **Parallel Slice Implementation with `/teamwork`**: When executing complex or parallel `[Parallel]` vertical slices, recommend Antigravity Enterprise `/teamwork` pairing `@ast-grinder` + `@runtime-parity-verifier` so `@ast-grinder` and `@runtime-parity-verifier` coordinate live via `send_message` to resolve parity discrepancies iteratively.
    - Require `APPROVED: RUNTIME_PARITY_VERIFIED` in `docs/parity_discrepancies.md` before concluding the slice.
 
 ---

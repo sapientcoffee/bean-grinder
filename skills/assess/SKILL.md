@@ -54,6 +54,7 @@ Dispatch all five specialized discovery scouts simultaneously using `invoke_suba
 #### Antigravity Subagent Execution Rules:
 - Use specific subagent `TypeName`s (`codmod-assessor`, `graphify-scout`, `seam-scout`, `spec-recovery-agent`, `migration-scout`) so `/agents` in the TUI displays meaningful names instead of generic 'self' or 'research'.
 - Set `Model: "inherit"` on all subagents to preserve the parent session's configured model tier.
+- **Isolation Rule (No `/teamwork` in Stage 1 Discovery)**: Stage 1 Discovery Scouts (`@codmod-assessor`, `@graphify-scout`, `@seam-scout`, `@spec-recovery-agent`, `@migration-scout`) must remain isolated `invoke_subagent` calls (never `/teamwork`) so discovery remains unbiased and free from cross-scout groupthink.
 
 #### Dispatch Payload:
 Call `invoke_subagent` for each of the 5 scouts:

@@ -115,6 +115,17 @@ class TestAgentsSchema(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.repo_root, "scripts", "generate_dashboard.py")))
         self.assertFalse(os.path.exists(os.path.join(self.repo_root, "gemini-extension.json")))
 
+    def test_rules_agents_md_documents_teamwork_and_subagent_delegation(self):
+        rules_path = os.path.join(self.repo_root, "rules", "AGENTS.md")
+        self.assertTrue(os.path.exists(rules_path), "rules/AGENTS.md must exist")
+        with open(rules_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        self.assertIn("/teamwork", content)
+        self.assertIn("adversarial-review", content)
+        self.assertIn("rewrite", content)
+        self.assertIn("assess", content)
+
 
 if __name__ == "__main__":
     unittest.main()
